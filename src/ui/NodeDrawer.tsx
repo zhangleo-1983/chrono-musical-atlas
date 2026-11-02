@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { audioEngine } from '../audio/engine';
 import { PATCHES } from '../audio/patches';
-import { NODE_BY_ID } from '../data';
+import { ARTIFACT_IMAGES, NODE_BY_ID } from '../data';
 import { GENRE_COLORS, GENRE_LABELS } from '../domain/genres';
 import { formatYear } from '../domain/timeScale';
 import type { ResolvedNode } from '../domain/types';
 import { useAudioState } from '../audio/useAudioState';
 import { useAtlasStore } from '../store/atlasStore';
 import BlueprintFigure from './BlueprintFigure';
-import { commonsSearchUrl } from './figures';
+import ArtifactLightbox from './ArtifactLightbox';
 import { RADAR_AXES } from './radar';
 import SoundPlayer from './SoundPlayer';
 import './hud.css';
@@ -26,13 +26,18 @@ function Lineage({ node, selectNode }: { node: ResolvedNode; selectNode: (id: st
 
 function DrawerContent({ node, compare, selectNode, addToCompare }: { node: ResolvedNode; compare: [string | null, string | null]; selectNode: (id: string, opts: { reveal: true; focus: true }) => void; addToCompare: (id: string) => void }) {
   const [activeTab, setActiveTab] = useState(0);
+  const [artifactOpen, setArtifactOpen] = useState(false);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const artifactTriggerRef = useRef<HTMLButtonElement | null>(null);
   const { playingKey } = useAudioState();
   const resonating = playingKey === node.id;
   const yearLabel = `${formatYear(node.startYear)} — ${node.endYear === null ? '至今' : formatYear(node.endYear)}`;
   const searchQuery = node.searchQuery ?? node.nameEn;
   const spotify = `https://open.spotify.com/search/${encodeURIComponent(searchQuery)}`;
   const youtube = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`;
+  const artifactImage = ARTIFACT_IMAGES[node.id];
+  const openArtifact = (trigger: HTMLButtonElement) => { artifactTriggerRef.current = trigger; setArtifactOpen(true); };
+  const closeArtifact = () => setArtifactOpen(false);
   const moveTab = (direction: number) => setActiveTab((current) => {
     const next = (current + direction + TABS.length) % TABS.length;
     requestAnimationFrame(() => tabRefs.current[next]?.focus());
@@ -42,7 +47,7 @@ function DrawerContent({ node, compare, selectNode, addToCompare }: { node: Reso
     <div className="drawer-hero">
       <div className="drawer-heading"><div><span className="eyebrow">MUSIC NODE / {node.era.toUpperCase()}</span><h2>{node.name}</h2><p>{node.nameEn}</p></div><button type="button" className="close-button" aria-label="关闭档案" onClick={() => useAtlasStore.getState().selectNode(null)}>×</button></div>
       <div className="drawer-meta"><span>{yearLabel}</span><span>{node.city} · {node.region}</span><span className="genre-badge" style={{ color: GENRE_COLORS[node.genre] }}>{GENRE_LABELS[node.genre]}</span></div>
-      <BlueprintFigure node={node} resonating={resonating} />
+      <BlueprintFigure node={node} resonating={resonating} onOpenArtifact={openArtifact} />
       <SoundPlayer playKey={node.id} patch={node.patch} label={PATCHES[node.patch].label} />
     </div>
     <div className="drawer-tabs" role="tablist" aria-label="节点档案分页">
@@ -52,9 +57,10 @@ function DrawerContent({ node, compare, selectNode, addToCompare }: { node: Reso
       {activeTab === 0 && <><section className="drawer-section"><h3>历史解读</h3><p className="summary">{node.summary}</p></section><section className="drawer-section"><h3>代表作</h3><div className="tag-list">{node.works.map((work) => <span className="info-tag" key={work}>{work}</span>)}</div></section><section className="drawer-section"><h3>音色与特征</h3><div className="tag-list">{[...node.instruments, ...node.traits].map((item) => <span className="info-tag" key={item}>{item}</span>)}</div></section></>}
       {activeTab === 1 && <><section className="drawer-section"><h3>代表音乐家</h3>{node.musicians.map((musician) => <div className="musician" key={musician.name}><strong>{musician.name}</strong><span>{musician.nameEn} · {musician.lifespan}</span><small>{musician.knownFor}</small></div>)}</section><section className="drawer-section"><h3>人物典故</h3><p className="summary">{node.story}</p></section></>}
       {activeTab === 2 && <><section className="drawer-section"><h3>礼乐制度 / 规范</h3><p className="drawer-fact">{node.institution}</p></section><section className="drawer-section"><h3>传世典籍</h3><div className="tag-list">{node.treatises.map((treatise) => <span className="info-tag" key={treatise}>{treatise}</span>)}</div></section></>}
-      {activeTab === 3 && <><section className="drawer-section"><h3>考古文物 / 历史载体</h3><p className="drawer-fact">{node.artifact}</p><a className="museum-link" href={commonsSearchUrl(node)} target="_blank" rel="noopener noreferrer">查看博物馆文物实拍图 ↗</a></section><section className="drawer-section"><h3>律制与声学体系</h3><p className="drawer-fact">{node.tuningSystem}</p></section><section className="drawer-section"><h3>五维声学画像</h3><div className="radar-bars">{RADAR_AXES.map((axis) => <div className="radar-bar" key={axis.key}><span>{axis.label}</span><i><b style={{ width: `${node.radar[axis.key]}%` }} /></i><em>{node.radar[axis.key]}</em></div>)}</div></section></>}
+      {activeTab === 3 && <><section className="drawer-section"><h3>考古文物 / 历史载体</h3><p className="drawer-fact">{node.artifact}</p><button type="button" className="museum-link" onClick={(event) => openArtifact(event.currentTarget)}>查看博物馆文物实拍图</button></section><section className="drawer-section"><h3>律制与声学体系</h3><p className="drawer-fact">{node.tuningSystem}</p></section><section className="drawer-section"><h3>五维声学画像</h3><div className="radar-bars">{RADAR_AXES.map((axis) => <div className="radar-bar" key={axis.key}><span>{axis.label}</span><i><b style={{ width: `${node.radar[axis.key]}%` }} /></i><em>{node.radar[axis.key]}</em></div>)}</div></section></>}
     </div>
     <div className="drawer-footer"><Lineage node={node} selectNode={selectNode} /><div className="drawer-actions"><button type="button" className="compare-add" disabled={compare.includes(node.id)} onClick={() => addToCompare(node.id)}>{compare.includes(node.id) ? '已加入对比' : '+ 加入对比'}</button><a href={spotify} target="_blank" rel="noopener noreferrer">Spotify</a><a href={youtube} target="_blank" rel="noopener noreferrer">YouTube</a></div></div>
+    {artifactOpen && artifactImage && <ArtifactLightbox image={artifactImage} onClose={closeArtifact} returnFocusRef={artifactTriggerRef} />}
   </>;
 }
 

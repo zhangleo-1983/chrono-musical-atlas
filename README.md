@@ -38,3 +38,4 @@ npm test          # Vitest
 ## 许可证
 
 本项目代码基于 [Apache License 2.0](LICENSE) 开源。世界地图数据来自 `world-atlas`（Natural Earth），依赖各自遵循其许可证。
+节点中的文物图片来自 Wikimedia Commons，版权归各自作者，许可证见图片弹层标注。

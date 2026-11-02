@@ -15,3 +15,4 @@ export const NODES: ResolvedNode[] = [...RAW_NODES]
 export const NODE_BY_ID: ReadonlyMap<string, ResolvedNode> = new Map(NODES.map((node) => [node.id, node]));
 export { PRESETS } from './presets';
 export { ODYSSEYS } from './odysseys';
+export { ARTIFACT_IMAGES } from './images';

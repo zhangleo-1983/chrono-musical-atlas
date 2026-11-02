@@ -30,7 +30,3 @@ export const FIGURE_CAPTIONS: Record<FigureId, string> = {
 export function figureFor(node: Pick<MusicNode, 'patch' | 'figure'>): FigureId {
   return node.figure ?? PATCH_FIGURE[node.patch];
 }
-
-export function commonsSearchUrl(node: Pick<MusicNode, 'imageQuery' | 'nameEn'>): string {
-  return `https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(node.imageQuery ?? node.nameEn)}`;
-}

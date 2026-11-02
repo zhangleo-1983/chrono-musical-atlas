@@ -1,7 +1,7 @@
 import type { ResolvedNode } from '../domain/types';
-import { commonsSearchUrl, FIGURE_CAPTIONS, figureFor } from './figures';
+import { FIGURE_CAPTIONS, figureFor } from './figures';
 
-interface BlueprintFigureProps { node: ResolvedNode; resonating: boolean }
+interface BlueprintFigureProps { node: ResolvedNode; resonating: boolean; onOpenArtifact: (trigger: HTMLButtonElement) => void }
 
 function FigureDrawing({ figure }: { figure: ReturnType<typeof figureFor> }) {
   if (figure === 'flute') return <><path d="M58 104h260M82 104V82m34 22V72m34 32V82m34 22V68m34 36V80m34 24V74" /><path className="resonance" d="M68 128c54 22 190 22 244 0" /></>;
@@ -15,10 +15,10 @@ function FigureDrawing({ figure }: { figure: ReturnType<typeof figureFor> }) {
   return <><path d="M76 128h248M112 128V80h48v48m80 0V64h48v64" /><path className="resonance" d="M92 48h216" /></>;
 }
 
-export default function BlueprintFigure({ node, resonating }: BlueprintFigureProps) {
+export default function BlueprintFigure({ node, resonating, onOpenArtifact }: BlueprintFigureProps) {
   const figure = figureFor(node);
   return <figure className={`blueprint-figure${resonating ? ' is-resonating' : ''}`}>
-    <div className="blueprint-head"><figcaption>{FIGURE_CAPTIONS[figure]}</figcaption><a href={commonsSearchUrl(node)} target="_blank" rel="noopener noreferrer">🖼️ 博物图鉴实拍 ↗</a></div>
+    <div className="blueprint-head"><figcaption>{FIGURE_CAPTIONS[figure]}</figcaption><button type="button" onClick={(event) => onOpenArtifact(event.currentTarget)}>🖼️ 文物实拍</button></div>
     <svg className="blueprint-svg" viewBox="0 0 400 180" role="img" aria-label={FIGURE_CAPTIONS[figure]}><g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M42 148h316" stroke="var(--gilt)" opacity=".55" /><FigureDrawing figure={figure} /></g></svg>
   </figure>;
 }

@@ -73,7 +73,7 @@
 .drawer-footer { padding: 8px 25px 14px; }
 .drawer-footer .drawer-actions { margin-top: 10px; }
 .drawer-footer .lineage-links { max-height: 92px; overflow-y: auto; }
-.museum-link { display: inline-block; margin-top: 9px; color: var(--gilt); font-size: 11px; text-decoration: none; }
+.museum-link { display: inline-block; margin-top: 9px; border: 0; padding: 0; color: var(--gilt); background: transparent; cursor: pointer; font: inherit; font-size: 11px; text-decoration: none; }
 .radar-bars { display: grid; gap: 8px; }
 .radar-bar { display: grid; grid-template-columns: 82px 1fr 25px; align-items: center; gap: 7px; color: var(--muted); font-size: 10px; }
 .radar-bar i { display: block; height: 5px; overflow: hidden; border-radius: 999px; background: rgba(143,164,224,.16); }
@@ -96,7 +96,8 @@
 .drawer-section { margin-top: 20px; }
 .blueprint-figure { margin: 16px 0 4px; color: #aab8e2; --gilt: #d8b26a; }
 .blueprint-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 10px; }
-.blueprint-head a { color: var(--gilt); text-decoration: none; white-space: nowrap; }
+.blueprint-head a, .blueprint-head button { color: var(--gilt); text-decoration: none; white-space: nowrap; }
+.blueprint-head button { border: 0; padding: 0; background: transparent; cursor: pointer; font: inherit; }
 .blueprint-svg { display: block; width: 100%; height: auto; margin-top: 5px; padding: 5px; border: 1px solid rgba(216,178,106,.22); border-radius: 9px; background: rgba(9,13,28,.58); }
 .blueprint-figure .resonance { stroke: var(--gilt); opacity: .58; transform-origin: center; }
 .blueprint-figure.is-resonating .resonance { animation: figure-resonance 1.25s ease-in-out infinite; }
@@ -104,6 +105,15 @@
 @media (prefers-reduced-motion: reduce) { .blueprint-figure.is-resonating .resonance { animation: none; } }
 .drawer-section h3 { margin: 0 0 9px; color: var(--muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
 .drawer-fact { margin: 0; color: var(--text); line-height: 1.55; }
+.artifact-lightbox { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(2,4,10,.78); }
+.artifact-card { display: grid; gap: 10px; width: min(960px, 90vw); max-height: 90vh; overflow: auto; padding: 18px; border: 1px solid var(--border); border-radius: 16px; background: #0d1228; box-shadow: 0 30px 90px rgba(0,0,0,.6); }
+.artifact-card-head { display: flex; align-items: center; justify-content: space-between; }
+.artifact-image-frame { position: relative; display: grid; min-height: 120px; place-items: center; overflow: hidden; border: 1px solid rgba(143,164,224,.18); border-radius: 10px; background: rgba(5,8,18,.7); }
+.artifact-image-frame img { display: block; max-width: 90vw; max-height: 70vh; object-fit: contain; }
+.artifact-image-status { padding: 36px 18px; color: var(--muted); font-size: 12px; text-align: center; }
+.artifact-caption { margin: 0; color: var(--text); font-size: 13px; line-height: 1.55; }
+.artifact-credit { margin: 0; color: var(--muted); font-size: 11px; }
+.artifact-source-link { color: var(--gilt); font-size: 11px; text-decoration: none; }
 .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
 .info-tag { padding: 5px 8px; border: 1px solid rgba(143,164,224,.2); border-radius: 6px; color: #cbd5fa; font-size: 11px; background: rgba(78,95,153,.1); }
 .musician { display: grid; gap: 3px; padding: 8px 0; border-bottom: 1px solid rgba(143,164,224,.1); }

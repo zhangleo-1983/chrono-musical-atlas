@@ -1,6 +1,6 @@
 import type { MusicNode, Musician } from '../domain/types';
 
-type BaseMusicNode = Omit<MusicNode, 'institution' | 'treatises' | 'story' | 'imageQuery' | 'figure'>;
+type BaseMusicNode = Omit<MusicNode, 'institution' | 'treatises' | 'story' | 'figure'>;
 
 const BASE_NODES: BaseMusicNode[] = [
   { id: 'vedic-chant', name: '吠陀吟诵', nameEn: 'Vedic Chant', startYear: -1500, endYear: -500, city: '瓦拉纳西', region: '北印度', continent: 'asia', lat: 25.3, lon: 83, genre: 'ritual', influence: 4, musicians: [{ name: '吠陀祭司传统', nameEn: 'Vedic priestly tradition', lifespan: '公元前1500年起', knownFor: '口传吠陀经文与音调' }], works: ['梨俱吠陀', '娑摩吠陀'], instruments: ['人声', '祭仪钟'], traits: ['三音调式', '自由吟诵'], artifact: '祭司口传的吠陀吟诵传统与经文记忆', tuningSystem: '后世《舞论》系统阐述的二十二 Śruti 理论', searchQuery: 'Vedic chant music', summary: '吠陀吟诵以严格口传保存经文和音高，是南亚最早的音乐记忆系统之一。它把呼吸、语义与仪式动作编织为连续声线，影响了印度古典音乐的调式观念；后世《舞论》才系统阐述二十二 Śruti。其核心价值在于以听觉记忆延续文本秩序。', radar: { rhythm: 44, harmony: 20, improvisation: 58, ensemble: 30, fusion: 18 }, patch: 'modal-drone', influencedBy: [] },
@@ -39,19 +39,19 @@ const BASE_NODES: BaseMusicNode[] = [
   { id: 'maya-ritual', name: '玛雅仪式音乐', nameEn: 'Maya Ritual Music', startYear: -600, endYear: 900, city: '蒂卡尔', region: '玛雅低地', continent: 'americas', lat: 17.22, lon: -89.62, genre: 'ritual', influence: 4, musicians: [{ name: '玛雅仪式乐师群像', nameEn: 'Maya ritual musicians', lifespan: '约公元前600—公元900年', knownFor: '以陶制笛、鼓与号角服务仪式和宫廷场景' }, { name: '玛雅宫廷乐队群像', nameEn: 'Maya court ensembles', lifespan: '古典期约250—900年', knownFor: '在壁画与器物中留下合奏形象' }], works: ['博南帕克壁画乐队场景', '玛雅陶制哨笛与多腔笛'], instruments: ['陶制哨笛', '框鼓'], traits: ['多腔共鸣', '仪式合奏'], artifact: '玛雅陶制哨笛、博南帕克壁画与宫廷乐队图像', tuningSystem: '陶笛腔体共鸣与鼓、号角的仪式合奏体系', summary: '玛雅仪式音乐通过陶制哨笛、鼓和号角把宫廷、祭祀与城市空间连接起来。博南帕克壁画约作于公元790年前后，展示了乐队场景；德累斯顿抄本和《波波尔·乌》属于后古典期材料，不能直接当作蒂卡尔前古典制度的证据。', radar: { rhythm: 74, harmony: 28, improvisation: 58, ensemble: 72, fusion: 38 }, patch: 'bone-flute', influencedBy: [] },
 ];
 
-type ArchiveData = Pick<MusicNode, 'institution' | 'treatises' | 'story'> & Partial<Pick<MusicNode, 'imageQuery' | 'figure'>>;
+type ArchiveData = Pick<MusicNode, 'institution' | 'treatises' | 'story'> & Partial<Pick<MusicNode, 'figure'>>;
 
 const ARCHIVE_DATA: Record<string, ArchiveData> = {
-  'vedic-chant': { institution: '吠陀祭仪与口传师徒制度', treatises: ['《舞论》', '《娑摩吠陀》'], story: '吠陀吟诵依靠严格的口传训练保存经文、重音和旋律轮廓，以极高精度延续至今。后世《舞论》对音律理论的系统整理，为理解这一传统提供了重要参照，但不能把后世理论直接当作早期仪式的原始记录。', imageQuery: 'Vedic chant tradition' },
-  'zhou-ritual': { institution: '周代礼乐制度与诸侯祭祀', treatises: ['《乐记》', '《荀子·乐论》'], story: '周代礼乐把音阶、器制和社会秩序放进同一套制度语言，古琴又在文人传统中发展出重余韵的独奏审美。后世文献不断追述周礼，因此展柜中的文本既是制度记忆，也是后人整理与解释的结果。', imageQuery: 'Zhou ritual music guqin' },
-  'greek-modes': { institution: '城邦祭祀、戏剧与哲学教育', treatises: ['《论音乐》', '《政治学》中的音乐论述'], story: '古希腊音乐连接诗歌、戏剧、祭祀和数学化音程。毕达哥拉斯关于比例的讨论影响了后世音律想象，但相传的铁锤故事并不符合现代物理，铁锤重量与音高并不成比例，应视为传说而非实验记录。', imageQuery: 'Ancient Greek music modes' },
-  'gagaku': { institution: '日本宫廷雅乐寮与寺社仪式', treatises: ['《体源抄》（1512）', '《教训抄》'], story: '日本雅乐在宫廷仪式中保存了东亚古代乐制的层层回声，长音、留白与缓慢推进构成独特时间感。大陆传入的乐器和五声材料，经宫廷制度、寺社实践与后世传承重新编排，形成稳定的仪式性声场。', imageQuery: 'Japanese gagaku ensemble' },
-  'baghdad-maqam': { institution: '阿拔斯宫廷、城市乐馆与理论学派', treatises: ['《大音乐书》', '《音乐论书》'], story: '巴格达的宫廷、诗歌和城市生活让木卡姆成为固定音阶框架与即兴旋律并存的传统。乌德琴和歌唱连接不同社群，后世理论家留下的论著则帮助我们理解调式分类，但不等同于一份完整的早期演奏谱。', imageQuery: 'Baghdad maqam oud' },
-  'gregorian-chant': { institution: '拉丁教会礼仪与修道院抄写制度', treatises: ['圭多《辨及微芒》（Micrologus，约1026）', '圣加仑抄本 Cod. Sang. 359'], story: '格里高利圣咏以无伴奏单声部歌唱服务拉丁礼仪，旋律沿教会调式自由流动。它被认为受到早期犹太礼仪歌唱和地中海传统的影响；修道院抄本、教育与记谱实践，则使这些旋律进入欧洲长期保存的制度网络。', imageQuery: 'Gregorian chant manuscript' },
+  'vedic-chant': { institution: '吠陀祭仪与口传师徒制度', treatises: ['《舞论》', '《娑摩吠陀》'], story: '吠陀吟诵依靠严格的口传训练保存经文、重音和旋律轮廓，以极高精度延续至今。后世《舞论》对音律理论的系统整理，为理解这一传统提供了重要参照，但不能把后世理论直接当作早期仪式的原始记录。' },
+  'zhou-ritual': { institution: '周代礼乐制度与诸侯祭祀', treatises: ['《乐记》', '《荀子·乐论》'], story: '周代礼乐把音阶、器制和社会秩序放进同一套制度语言，古琴又在文人传统中发展出重余韵的独奏审美。后世文献不断追述周礼，因此展柜中的文本既是制度记忆，也是后人整理与解释的结果。' },
+  'greek-modes': { institution: '城邦祭祀、戏剧与哲学教育', treatises: ['《论音乐》', '《政治学》中的音乐论述'], story: '古希腊音乐连接诗歌、戏剧、祭祀和数学化音程。毕达哥拉斯关于比例的讨论影响了后世音律想象，但相传的铁锤故事并不符合现代物理，铁锤重量与音高并不成比例，应视为传说而非实验记录。' },
+  'gagaku': { institution: '日本宫廷雅乐寮与寺社仪式', treatises: ['《体源抄》（1512）', '《教训抄》'], story: '日本雅乐在宫廷仪式中保存了东亚古代乐制的层层回声，长音、留白与缓慢推进构成独特时间感。大陆传入的乐器和五声材料，经宫廷制度、寺社实践与后世传承重新编排，形成稳定的仪式性声场。' },
+  'baghdad-maqam': { institution: '阿拔斯宫廷、城市乐馆与理论学派', treatises: ['《大音乐书》', '《音乐论书》'], story: '巴格达的宫廷、诗歌和城市生活让木卡姆成为固定音阶框架与即兴旋律并存的传统。乌德琴和歌唱连接不同社群，后世理论家留下的论著则帮助我们理解调式分类，但不等同于一份完整的早期演奏谱。' },
+  'gregorian-chant': { institution: '拉丁教会礼仪与修道院抄写制度', treatises: ['圭多《辨及微芒》（Micrologus，约1026）', '圣加仑抄本 Cod. Sang. 359'], story: '格里高利圣咏以无伴奏单声部歌唱服务拉丁礼仪，旋律沿教会调式自由流动。它被认为受到早期犹太礼仪歌唱和地中海传统的影响；修道院抄本、教育与记谱实践，则使这些旋律进入欧洲长期保存的制度网络。' },
   'griot-mali': { institution: '曼德格里奥家族谱系与口述史诗制度', treatises: ['曼德口述史诗传承谱系', '科拉琴调弦与演奏传统'], story: '曼德格里奥以歌唱、科拉琴和鼓乐保存家族谱系与历史记忆，重复型节奏让叙事可以在现场持续变奏。格里奥既是乐师也是记忆的守护者，现代科拉演奏家把这套口传技艺带入全球舞台。' },
   'hindustani': { institution: '北印度宫廷与 gharana 师徒制度', treatises: ['拉格口传谱系', '塔拉节拍教学谱'], story: '印度斯坦古典乐以拉格规定旋律气质与时辰，以塔拉组织循环节拍。独奏者在持续低音上展开缓慢即兴，再逐步进入快速段落；不同 gharana 通过师徒口传保存装饰音和句法，使每次演奏仍有个人气息。' },
   'leipzig-baroque': { institution: '莱比锡圣托马斯教会与市民音乐制度', treatises: ['《音乐的奉献》初版谱', '《赋格的艺术》手稿'], story: '巴赫在莱比锡承担教会与城市音乐职务，把礼拜 cantata、管风琴即兴和器乐写作连接起来。复调声部如建筑般互相模仿；手稿、初版谱和教会档案共同显示出作曲、排练与演出之间的紧密关系。' },
-  'gamelan': { institution: '爪哇宫廷、村社与加美兰乐团', treatises: ['Jaap Kunst《Music in Java》（1934）', '宫廷加美兰谱本'], story: '爪哇加美兰以锣、金属琴和鼓构成循环层次，时间感围绕周期呼吸。宫廷仪式与社区表演共同保存斯连德罗、佩洛格等音阶及集体协作方式；苏帕迪等演奏者又把这种合奏传统带入现代舞台。', imageQuery: 'Javanese gamelan instruments', figure: 'bells' },
+  'gamelan': { institution: '爪哇宫廷、村社与加美兰乐团', treatises: ['Jaap Kunst《Music in Java》（1934）', '宫廷加美兰谱本'], story: '爪哇加美兰以锣、金属琴和鼓构成循环层次，时间感围绕周期呼吸。宫廷仪式与社区表演共同保存斯连德罗、佩洛格等音阶及集体协作方式；苏帕迪等演奏者又把这种合奏传统带入现代舞台。', figure: 'bells' },
   'vienna-classical': { institution: '维也纳宫廷、公共音乐会与出版业', treatises: ['格里辛格《海顿传记笔记》（1810）', '贝多芬晚期弦乐四重奏手稿'], story: '维也纳古典主义把宫廷赞助、公共音乐会和乐谱出版汇成新的职业网络。海顿、莫扎特与贝多芬以动机发展、对比主题和清晰调性塑造奏鸣曲与交响曲的公共语言，听众制度也由此获得稳定形式。' },
   'peking-opera': { institution: '北京戏班、票友社与剧场制度', treatises: ['京剧唱腔谱例', '梅兰芳演出档案'], story: '京剧以西皮、二黄等声腔和板腔体组织戏剧，用京胡、锣鼓与程式化身段推进角色行动。戏班、票友社和剧场把口传表演转为可学习的行当体系，梅兰芳的舞台实践又扩大了它的国际传播。' },
   'russian-national': { institution: '俄国作曲家群体与音乐会制度', treatises: ['斯塔索夫关于“强力集团”的评论文章', '俄罗斯民歌采集谱'], story: '俄罗斯民族乐派在欧洲学院写作中引入民歌、东正教音调与广阔地域想象。作曲家通过不规则节拍、鲜明管弦色彩和叙事性主题建立声音身份，民歌采集与公共音乐会则为这种民族表达提供了材料和听众。' },
@@ -66,16 +66,16 @@ const ARCHIVE_DATA: Record<string, ArchiveData> = {
   'tokyo-electro': { institution: '东京录音室、合成器厂商与电子流行制作', treatises: ['YMO 录音室档案', '模拟合成器编曲笔记'], story: '东京电子流行把模拟合成器、鼓机、采样和精确的录音室编曲结合起来。坂本龙一与 Yellow Magic Orchestra 的实验显示，电子设备不仅能模仿乐器，也能重新安排亚洲城市经验、舞曲节拍和流行歌曲的空间感。' },
   'detroit-techno': { institution: '底特律独立厂牌、汽车城俱乐部与 DJ 社群', treatises: ['Metroplex 厂牌出版物', 'Belleville Three 访谈档案'], story: '底特律 Techno 将四拍底鼓、合成器音色和未来主义想象放进独立厂牌与俱乐部网络。Belleville Three 等 DJ 以芝加哥电声传统、欧洲电子实验和汽车城工业经验为材料，建立了可持续循环又高度机械化的舞曲语言。' },
   'jiahu-flute': { institution: '贾湖聚落的制作与仪式使用场景', treatises: ['《中国音乐文物大系》贾湖条目', '贾湖骨笛测音记录'], story: '1987年河南舞阳贾湖遗址发掘出多支鹤类尺骨制成的骨笛。M282:20 等标本显示出不同孔数与音高安排；研究者据测音结果认为，制作者已在材料、孔位和可吹奏性之间积累经验，但不能据此还原完整旋律。' },
-  'sumer-lyre': { institution: '乌尔王陵的宫廷祭礼与乐师群体', treatises: ['乌尔里拉琴复原图录', '尼普尔调弦泥板 CBS 10996 研究'], story: '乌尔王陵的里拉琴把弦乐、歌唱和祭礼秩序联系起来。伍利发掘时发现琴师遗骸伏于琴旁，并以石膏灌注复原朽坏的木质琴体；恩赫杜安娜则是有名可考的早期作者之一，留下神庙赞美诗传统。', imageQuery: 'Sumerian lyre of Ur' },
+  'sumer-lyre': { institution: '乌尔王陵的宫廷祭礼与乐师群体', treatises: ['乌尔里拉琴复原图录', '尼普尔调弦泥板 CBS 10996 研究'], story: '乌尔王陵的里拉琴把弦乐、歌唱和祭礼秩序联系起来。伍利发掘时发现琴师遗骸伏于琴旁，并以石膏灌注复原朽坏的木质琴体；恩赫杜安娜则是有名可考的早期作者之一，留下神庙赞美诗传统。' },
   'egypt-temple': { institution: '古埃及神庙、葬仪与女祭司歌者体系', treatises: ['《阿吞颂歌》', '古埃及墓室乐舞图录'], story: '阿肯那顿时期的《阿吞颂歌》把太阳神礼赞置于王室宗教改革语境中；阿蒙神庙也有女祭司歌者承担礼仪歌唱。墓室图像显示歌者以手势提示节拍，盲人竖琴师的歌曲则常被解释为对宴饮、生命短暂与死亡的沉思。' },
-  'hurrian-hymn': { institution: '乌加里特宫廷、泥板书写与里拉琴传统', treatises: ['H.6 泥板音程提示', '乌加里特楔形文字音乐研究'], story: '胡里安圣歌保存在乌加里特楔形文字泥板上，是现存最古老的基本可复原记谱乐曲之一。它把歌词、音程提示和弦名并置，展示青铜时代近东固定旋律的努力；尼普尔调弦泥板 CBS 10996 属古巴比伦时期，不能与 H.6 混为一谈。', imageQuery: 'Hurrian Hymn No. 6 tablet' },
+  'hurrian-hymn': { institution: '乌加里特宫廷、泥板书写与里拉琴传统', treatises: ['H.6 泥板音程提示', '乌加里特楔形文字音乐研究'], story: '胡里安圣歌保存在乌加里特楔形文字泥板上，是现存最古老的基本可复原记谱乐曲之一。它把歌词、音程提示和弦名并置，展示青铜时代近东固定旋律的努力；尼普尔调弦泥板 CBS 10996 属古巴比伦时期，不能与 H.6 混为一谈。' },
   'andean-chavin': { institution: '查文宗教建筑、地下回廊与祭司群体', treatises: ['查文海螺号考古报告', '安第斯仪式建筑声学研究'], story: '2001年考古工作者在查文·德万塔尔发现20支刻纹海螺号，为安第斯早期吹管与仪式声场提供了重要物证。研究认为，地下回廊的狭窄结构会塑造回声与方向感，祭司可能借此组织集体聆听，但具体仪式仍无法完整复原。' },
   'zenghouyi-bells': { institution: '曾侯乙墓葬、乐悬制度与战国礼乐工坊', treatises: ['《左传》伶州鸠论律', '曾侯乙编钟铭文释读'], story: '1978年随州擂鼓墩曾侯乙墓出土65枚青铜编钟，钟体与附件留下约3700字铭文。铭文记录律名、音高和诸侯体系，显示礼乐等级与铸造技术相互支撑；整套钟仍可发出双音，但不能简单等同于原始演奏现场。' },
   'persian-silkroad': { institution: '丝路绿洲、龟兹石窟与北周宫廷', treatises: ['《隋书·音乐志》', '克孜尔石窟伎乐图研究'], story: '相传萨珊乐师巴尔巴德以琴曲向霍斯劳二世暗示其爱马沙卜迪兹已死，使国王自己说出噩耗。约568年，苏祗婆随突厥皇后进入北周；白明达等乐人参与宫廷传播，克孜尔石窟伎乐图也留下弦乐与舞乐的视觉线索。' },
   'roman-hydraulis': { institution: '希腊化机械工坊、罗马剧场与公共仪式', treatises: ['《建筑十书》卷十', '阿昆库姆 228 年管风琴遗存报告'], story: '亚历山大里亚的克特西比乌斯被认为发明了水压管风琴，维特鲁威《建筑十书》卷十记述了它的机械原理。匈牙利阿昆库姆发现的228年管风琴遗存说明其在罗马公共空间流通；波爱修斯后来把古典音乐理论传给中世纪。' },
-  'han-wei-yuefu': { institution: '汉魏乐府、宫廷乐署与文人琴学', treatises: ['《声无哀乐论》', '《乐记》'], story: '据《晋书》记载，嵇康在临刑前弹奏《广陵散》，随后从容赴死；嵇康卒于262年，故事中的琴曲成为后世谈论士人风骨与琴乐表达的核心意象。蔡邕、蔡琰和西汉李延年则代表更早的文献、歌辞与宫廷乐府线索。', imageQuery: 'Han Wei Yuefu qin music' },
-  'hebrew-temple': { institution: '耶路撒冷圣殿礼仪与歌者班次', treatises: ['《诗篇》', '《历代志上》'], story: '巴比伦之囚的记忆把失去故土与失去歌唱场所联系起来，《诗篇》描绘流亡者将竖琴挂在柳树上的哀悼意象。圣殿传统的应答式吟唱后来被认为影响了早期基督教圣咏；这些联系仍需区分文本记忆与可证实的传承链。', imageQuery: 'Jerusalem temple music psalms' },
-  'maya-ritual': { institution: '玛雅城邦宫廷、祭祀与乐师群体', treatises: ['《德累斯顿抄本》研究', '博南帕克壁画乐队研究'], story: '博南帕克壁画约作于公元790年前后，描绘鼓手、号角手与仪式队列，显示玛雅宫廷乐队在视觉与政治秩序中的位置。后世抄本材料可补充神话语境，但年代和地区不同，不能直接当作古典期每座城邦的制度记录。', imageQuery: 'Maya ritual music Bonampak mural' },
+  'han-wei-yuefu': { institution: '汉魏乐府、宫廷乐署与文人琴学', treatises: ['《声无哀乐论》', '《乐记》'], story: '据《晋书》记载，嵇康在临刑前弹奏《广陵散》，随后从容赴死；嵇康卒于262年，故事中的琴曲成为后世谈论士人风骨与琴乐表达的核心意象。蔡邕、蔡琰和西汉李延年则代表更早的文献、歌辞与宫廷乐府线索。' },
+  'hebrew-temple': { institution: '耶路撒冷圣殿礼仪与歌者班次', treatises: ['《诗篇》', '《历代志上》'], story: '巴比伦之囚的记忆把失去故土与失去歌唱场所联系起来，《诗篇》描绘流亡者将竖琴挂在柳树上的哀悼意象。圣殿传统的应答式吟唱后来被认为影响了早期基督教圣咏；这些联系仍需区分文本记忆与可证实的传承链。' },
+  'maya-ritual': { institution: '玛雅城邦宫廷、祭祀与乐师群体', treatises: ['《德累斯顿抄本》研究', '博南帕克壁画乐队研究'], story: '博南帕克壁画约作于公元790年前后，描绘鼓手、号角手与仪式队列，显示玛雅宫廷乐队在视觉与政治秩序中的位置。后世抄本材料可补充神话语境，但年代和地区不同，不能直接当作古典期每座城邦的制度记录。' },
 };
 
 const ANCIENT_SECOND_MUSICIANS: Record<string, Musician> = {
