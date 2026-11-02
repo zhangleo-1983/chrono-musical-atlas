@@ -7,10 +7,11 @@ import { NODE_BY_ID, NODES, PRESETS } from './index';
 
 describe('music dataset', () => {
   it('contains a connected, geographically valid MVP dataset', () => {
-    expect(NODES).toHaveLength(31);
+    expect(NODES).toHaveLength(34);
     expect(new Set(NODES.filter((n) => n.era === 'ancient').map((n) => n.id))).toEqual(new Set([
       'jiahu-flute', 'sumer-lyre', 'egypt-temple', 'hurrian-hymn', 'andean-chavin', 'zenghouyi-bells',
-      'persian-silkroad', 'roman-hydraulis', 'vedic-chant', 'zhou-ritual', 'greek-modes',
+      'persian-silkroad', 'roman-hydraulis', 'vedic-chant', 'zhou-ritual', 'greek-modes', 'han-wei-yuefu',
+      'hebrew-temple', 'maya-ritual',
     ]));
     expect(new Set(NODES.map((n) => n.id)).size).toBe(NODES.length);
     expect(new Set(NODES.map((n) => `${n.lat},${n.lon}`)).size).toBe(NODES.length);
@@ -30,6 +31,10 @@ describe('music dataset', () => {
       expect(node.traits.length).toBeGreaterThanOrEqual(2);
       expect(node.artifact.length).toBeGreaterThan(0);
       expect(node.tuningSystem.length).toBeGreaterThan(0);
+      expect(node.institution.length).toBeGreaterThan(0);
+      expect(node.treatises.length).toBeGreaterThanOrEqual(2);
+      expect(node.story.length).toBeGreaterThanOrEqual(80);
+      expect(node.story.length).toBeLessThanOrEqual(220);
       expect(node.summary.length).toBeGreaterThanOrEqual(80);
       expect(node.summary.length).toBeLessThanOrEqual(160);
       for (const value of Object.values(node.radar)) expect(Number.isInteger(value) && value >= 0 && value <= 100).toBe(true);
@@ -39,6 +44,11 @@ describe('music dataset', () => {
         expect(parent!.startYear).toBeLessThan(node.startYear);
       }
       for (const childId of node.influences) expect(NODE_BY_ID.get(childId)?.influencedBy).toContain(node.id);
+    }
+    const ancient = NODES.filter((node) => node.era === 'ancient');
+    for (const node of ancient) {
+      expect(node.musicians.length).toBeGreaterThanOrEqual(2);
+      expect(new Set(node.musicians.map((musician) => musician.name)).size).toBe(node.musicians.length);
     }
     for (const preset of PRESETS) {
       expect(NODE_BY_ID.has(preset.a)).toBe(true); expect(NODE_BY_ID.has(preset.b)).toBe(true); expect(preset.a).not.toBe(preset.b);
