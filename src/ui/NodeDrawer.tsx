@@ -67,8 +67,11 @@ function DrawerContent({ node, compare, selectNode, addToCompare }: { node: Reso
 export default function NodeDrawer() {
   const { selectedId, compare, compareOpen, selectNode, setCompareOpen, addToCompare } = useAtlasStore();
   const node = selectedId ? NODE_BY_ID.get(selectedId) : undefined;
+  const drawerRef = useRef<HTMLElement>(null);
   useEffect(() => () => audioEngine.stop(), [selectedId]);
+  // On phones the whole sheet scrolls; a newly selected node should start at its title.
+  useEffect(() => { drawerRef.current?.scrollTo({ top: 0 }); }, [selectedId]);
   useEffect(() => { const onKey = (event: KeyboardEvent) => { if (event.key !== 'Escape') return; if (compareOpen) setCompareOpen(false); else selectNode(null); }; document.addEventListener('keydown', onKey); return () => document.removeEventListener('keydown', onKey); }, [compareOpen, selectNode, setCompareOpen]);
   if (!node) return null;
-  return <aside className="node-drawer" aria-label={`${node.name}档案`}><div className="drawer-handle" aria-hidden="true" /><DrawerContent key={node.id} node={node} compare={compare} selectNode={(id, opts) => selectNode(id, opts)} addToCompare={addToCompare} /></aside>;
+  return <aside ref={drawerRef} className="node-drawer" aria-label={`${node.name}档案`}><div className="drawer-handle" aria-hidden="true" /><DrawerContent key={node.id} node={node} compare={compare} selectNode={(id, opts) => selectNode(id, opts)} addToCompare={addToCompare} /></aside>;
 }
