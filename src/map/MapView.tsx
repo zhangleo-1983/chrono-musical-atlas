@@ -1,0 +1,67 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { NODES } from '../data';
+import { GENRE_COLORS } from '../domain/genres';
+import { isVisible, lineage, nodeTimeState } from '../domain/selectors';
+import { useAtlasStore } from '../store/atlasStore';
+import { buildArcs } from './arcs';
+import { GRID_PATH, LAND_PATH, project, VIEW_H, VIEW_W } from './projection';
+import { clamp, focusOn, IDENTITY, lerpViewport, pan, type Viewport, zoomAt } from './viewport';
+import './map.css';
+
+const STARS = Array.from({ length: 90 }, (_, i) => ({ x: (i * 83) % VIEW_W, y: (i * 47) % VIEW_H, r: i % 7 === 0 ? 1.2 : 0.55 }));
+const LABEL_OFFSETS: Record<string, { x: number; y: number; anchor: 'start' | 'end' }> = {
+  'leipzig-baroque': { x: 10, y: -19, anchor: 'start' },
+  'vienna-classical': { x: 10, y: 18, anchor: 'start' },
+  'london-rock': { x: -10, y: 18, anchor: 'end' },
+};
+
+export default function MapView() {
+  const { era, year, genres, showArcs, selectedId, hoveredId, selectNode, setHovered } = useAtlasStore();
+  const arcs = useMemo(() => buildArcs(NODES), []);
+  const focusNonce = useAtlasStore((state) => state.focus?.nonce);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const zoomedRef = useRef(false);
+  const svgRef = useRef<SVGSVGElement>(null); const worldRef = useRef<SVGGElement>(null); const viewportRef = useRef<Viewport>({ ...IDENTITY });
+  const animationRef = useRef<number | null>(null); const pointerRef = useRef({ id: -1, x: 0, y: 0, moved: false, captured: false }); const ignoreNextClick = useRef(false);
+  const applyViewport = (next: Viewport) => { const viewport = clamp(next); viewportRef.current = viewport; worldRef.current?.setAttribute('transform', `translate(${viewport.x} ${viewport.y}) scale(${viewport.k})`); svgRef.current?.style.setProperty('--k', String(viewport.k)); const zoomed = viewport.k >= 2.5; if (zoomed !== zoomedRef.current) { zoomedRef.current = zoomed; setIsZoomed(zoomed); } };
+  const cancelAnimation = () => { if (animationRef.current !== null) cancelAnimationFrame(animationRef.current); animationRef.current = null; };
+  const viewBoxPoint = (event: PointerEvent | WheelEvent): [number, number] => { const svg = svgRef.current; const ctm = svg?.getScreenCTM()?.inverse(); if (!svg || !ctm) return [event.offsetX, event.offsetY]; const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(ctm); return [point.x, point.y]; };
+  const animateTo = (target: Viewport) => { cancelAnimation(); const from = viewportRef.current; const started = performance.now(); const run = (now: number) => { const progress = Math.min(1, (now - started) / 450); applyViewport(lerpViewport(from, target, progress)); if (progress < 1) animationRef.current = requestAnimationFrame(run); else animationRef.current = null; }; animationRef.current = requestAnimationFrame(run); };
+
+  useEffect(() => { applyViewport(viewportRef.current); return cancelAnimation; }, []);
+  useEffect(() => {
+    const svg = svgRef.current; if (!svg) return;
+    const onWheel = (event: WheelEvent) => { event.preventDefault(); cancelAnimation(); const point = viewBoxPoint(event); applyViewport(zoomAt(viewportRef.current, point[0], point[1], Math.exp(-event.deltaY * 0.001))); };
+    svg.addEventListener('wheel', onWheel, { passive: false }); return () => svg.removeEventListener('wheel', onWheel);
+  }, []);
+  useEffect(() => { const target = useAtlasStore.getState().focus; if (!target) return; const node = NODES.find((item) => item.id === target.id); if (!node) return; const point = project(node.lon, node.lat); const selected = useAtlasStore.getState().selectedId; const center: [number, number] = selected ? [VIEW_W * 0.38, VIEW_H * 0.5] : [VIEW_W / 2, VIEW_H / 2]; animateTo(focusOn(point, Math.max(viewportRef.current.k, 3), center)); }, [focusNonce]);
+  const selectedLineage = useMemo(() => selectedId ? lineage(selectedId, new Map(NODES.map((node) => [node.id, node]))) : { nodeIds: new Set<string>(), edgeKeys: new Set<string>() }, [selectedId]);
+  const visible = (id: string) => { const node = NODES.find((item) => item.id === id); return node ? isVisible(node, { era, year, genres }) : false; };
+  const arcVisible = (from: string, to: string) => showArcs && visible(from) && visible(to) && nodeTimeState(NODES.find((node) => node.id === from)!, era, year) !== 'future' && nodeTimeState(NODES.find((node) => node.id === to)!, era, year) !== 'future';
+  const orderedNodes = [...NODES.filter((node) => visible(node.id))].sort((a, b) => Number(selectedLineage.nodeIds.has(a.id)) - Number(selectedLineage.nodeIds.has(b.id)));
+  const orderedArcs = [...arcs.filter((arc) => arcVisible(arc.from, arc.to))].sort((a, b) => Number(selectedLineage.edgeKeys.has(a.key)) - Number(selectedLineage.edgeKeys.has(b.key)));
+
+  return <div className="map-shell">
+    <svg ref={svgRef} className="map-svg" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} aria-label="世界音乐史地图" onClick={() => { if (!ignoreNextClick.current) selectNode(null); ignoreNextClick.current = false; }} onPointerDown={(event) => { cancelAnimation(); const point = viewBoxPoint(event.nativeEvent); pointerRef.current = { id: event.pointerId, x: point[0], y: point[1], moved: false, captured: false }; }} onPointerMove={(event) => { if (pointerRef.current.id !== event.pointerId) return; const point = viewBoxPoint(event.nativeEvent); const dx = point[0] - pointerRef.current.x; const dy = point[1] - pointerRef.current.y; if (!pointerRef.current.moved && Math.hypot(dx, dy) > 4) { pointerRef.current.moved = true; svgRef.current?.setPointerCapture(event.pointerId); pointerRef.current.captured = true; } if (pointerRef.current.moved) applyViewport(pan(viewportRef.current, dx, dy)); pointerRef.current.x = point[0]; pointerRef.current.y = point[1]; }} onPointerUp={(event) => { if (pointerRef.current.id !== event.pointerId) return; if (pointerRef.current.captured && svgRef.current?.hasPointerCapture(event.pointerId)) svgRef.current.releasePointerCapture(event.pointerId); if (pointerRef.current.moved) { ignoreNextClick.current = true; window.setTimeout(() => { ignoreNextClick.current = false; }, 0); } pointerRef.current = { id: -1, x: 0, y: 0, moved: false, captured: false }; }} onPointerCancel={(event) => { if (pointerRef.current.id !== event.pointerId) return; if (pointerRef.current.captured && svgRef.current?.hasPointerCapture(event.pointerId)) svgRef.current.releasePointerCapture(event.pointerId); ignoreNextClick.current = true; pointerRef.current = { id: -1, x: 0, y: 0, moved: false, captured: false }; }}>
+      <defs>
+        <pattern id="map-dots" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="0.7" fill="#7484bc" opacity="0.22" /></pattern>
+        {NODES.map((node) => <radialGradient key={node.id} id={`glow-${node.id}`}><stop offset="0" stopColor={GENRE_COLORS[node.genre]} stopOpacity="0.8" /><stop offset="1" stopColor={GENRE_COLORS[node.genre]} stopOpacity="0" /></radialGradient>)}
+      </defs>
+      <rect width={VIEW_W} height={VIEW_H} fill="#080b19" />
+      <g ref={worldRef} className="map-world">
+        <g className="map-stars">{STARS.map((star) => <circle key={`${star.x}-${star.y}`} cx={star.x} cy={star.y} r={star.r} />)}</g>
+        <path className="map-grid" d={GRID_PATH} />
+        <path className="map-land" d={LAND_PATH} />
+        <path d={LAND_PATH} fill="url(#map-dots)" opacity="0.5" />
+        {showArcs && <g>{orderedArcs.map((arc) => { const highlighted = selectedLineage.edgeKeys.has(arc.key); const dimmed = selectedId !== null && !highlighted; return <path key={arc.key} className={`map-arc ${highlighted ? 'is-lineage' : ''} ${dimmed ? 'is-dim' : ''}`} style={{ '--arc-color': GENRE_COLORS[NODES.find((n) => n.id === arc.to)!.genre] } as React.CSSProperties} d={arc.d} />; })}</g>}
+      <g>{orderedNodes.map((node) => {
+        const [x, y] = project(node.lon, node.lat); const state = nodeTimeState(node, era, year); const highlighted = selectedLineage.nodeIds.has(node.id); const dimmed = selectedId !== null && !highlighted; const showLabel = node.influence === 5 || hoveredId === node.id || selectedId === node.id || isZoomed; const label = LABEL_OFFSETS[node.id] ?? { x: 9, y: -8, anchor: 'start' as const };
+        return <g key={node.id} transform={`translate(${x} ${y})`} className={`map-node-group ${dimmed ? 'is-dim' : ''} ${state === 'past' ? 'is-past' : ''} ${highlighted ? 'is-highlighted' : ''}`} onMouseEnter={() => setHovered(node.id)} onMouseLeave={() => setHovered(null)} onClick={(event) => { event.stopPropagation(); selectNode(node.id); }}>
+          <g className="map-node-detail"><circle cx="0" cy="0" r={node.influence * 5 + 7} fill={`url(#glow-${node.id})`} opacity="0.45" /><circle className="map-node-core" cx="0" cy="0" r={2.2 + node.influence * 0.8} fill={GENRE_COLORS[node.genre]} /><circle className="map-node-hit" cx="0" cy="0" r="8" />{showLabel && <text className="map-node-label" x={label.x} y={label.y} textAnchor={label.anchor}>{node.name}</text>}</g>
+        </g>;
+      })}</g>
+      </g>
+    </svg>
+    <button className="map-reset" type="button" onClick={() => animateTo(IDENTITY)}>复位全球视角</button>
+  </div>;
+}

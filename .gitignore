@@ -1,0 +1,9 @@
+node_modules
+dist
+.DS_Store
+
+# Local AI workflow (private)
+ai-workflow/
+CLAUDE.md
+AGENTS.md
+.agent/
