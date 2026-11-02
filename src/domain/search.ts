@@ -10,6 +10,8 @@ export function searchNodes(q: string, nodes: ResolvedNode[], limit = 8): Search
     const fields: [string, string][] = [
       ['name', node.name], ['nameEn', node.nameEn], ['city', node.city], ['genre', GENRE_LABELS[node.genre]],
       ...node.musicians.flatMap((m) => [['musician', m.name], ['musicianEn', m.nameEn]] as [string, string][]),
+      ...node.works.map((work) => ['work', work] as [string, string]),
+      ...node.treatises.map((treatise) => ['treatise', treatise] as [string, string]),
     ];
     const matched = fields.find(([, value]) => value.toLocaleLowerCase().includes(query));
     if (!matched) return [];

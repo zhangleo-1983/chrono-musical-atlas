@@ -10,9 +10,9 @@ import './map.css';
 
 const STARS = Array.from({ length: 90 }, (_, i) => ({ x: (i * 83) % VIEW_W, y: (i * 47) % VIEW_H, r: i % 7 === 0 ? 1.2 : 0.55 }));
 const LABEL_OFFSETS: Record<string, { x: number; y: number; anchor: 'start' | 'end' }> = {
-  'leipzig-baroque': { x: 10, y: -19, anchor: 'start' },
+  'leipzig-baroque': { x: 12, y: -24, anchor: 'start' },
   'vienna-classical': { x: 10, y: 18, anchor: 'start' },
-  'london-rock': { x: -10, y: 18, anchor: 'end' },
+  'london-rock': { x: -20, y: 14, anchor: 'end' },
 };
 
 export default function MapView() {

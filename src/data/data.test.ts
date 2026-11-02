@@ -3,7 +3,7 @@ import { ERA_IDS } from '../domain/eras';
 import { GENRES } from '../domain/genres';
 import type { PatchId } from '../domain/types';
 import { PATCHES } from '../audio/patches';
-import { NODE_BY_ID, NODES, PRESETS } from './index';
+import { NODE_BY_ID, NODES, ODYSSEYS, PRESETS } from './index';
 
 describe('music dataset', () => {
   it('contains a connected, geographically valid MVP dataset', () => {
@@ -35,6 +35,9 @@ describe('music dataset', () => {
       expect(node.treatises.length).toBeGreaterThanOrEqual(2);
       expect(node.story.length).toBeGreaterThanOrEqual(80);
       expect(node.story.length).toBeLessThanOrEqual(220);
+      expect(node.story).not.toBe(node.summary);
+      expect(node.treatises.some((treatise) => node.works.includes(treatise))).toBe(false);
+      expect(node.institution.startsWith(`${node.region}的`)).toBe(false);
       expect(node.summary.length).toBeGreaterThanOrEqual(80);
       expect(node.summary.length).toBeLessThanOrEqual(160);
       for (const value of Object.values(node.radar)) expect(Number.isInteger(value) && value >= 0 && value <= 100).toBe(true);
@@ -52,6 +55,16 @@ describe('music dataset', () => {
     }
     for (const preset of PRESETS) {
       expect(NODE_BY_ID.has(preset.a)).toBe(true); expect(NODE_BY_ID.has(preset.b)).toBe(true); expect(preset.a).not.toBe(preset.b);
+    }
+    expect(PRESETS).toHaveLength(7);
+    expect(ODYSSEYS).toHaveLength(3);
+    expect(ODYSSEYS.map((route) => route.stops.length)).toEqual([5, 7, 6]);
+    for (const route of ODYSSEYS) {
+      for (let index = 0; index < route.stops.length; index += 1) {
+        const node = NODE_BY_ID.get(route.stops[index]!);
+        expect(node).toBeDefined();
+        if (index > 0) expect(NODE_BY_ID.get(route.stops[index - 1]!)!.startYear).toBeLessThan(node!.startYear);
+      }
     }
   });
 });

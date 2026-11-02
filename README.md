@@ -1,6 +1,6 @@
 # Chrono-Musical Atlas
 
-Chrono-Musical Atlas 是一张可交互的世界音乐文明演化地图：用时间轴、地域节点、谱系飞线、程序化声音基因、三条文明巡礼路线和双卡对比，把从公元前 7000 年至今的 31 个音乐史节点放在同一张暗黑星图上探索。远古节点还提供考古载体与律制信息，便于从器物、记谱和声学体系切入。
+Chrono-Musical Atlas 是一张可交互的世界音乐文明演化地图：用时间轴、地域节点、谱系飞线、程序化声音基因、三条文明巡礼路线和双卡对比，把从公元前 7000 年至今的 34 个音乐史节点放在同一张暗黑星图上探索。远古节点还提供考古载体、律制信息和内联 SVG 博物图谱，便于从器物、记谱和声学体系切入。
 
 在线体验：https://zhangleo-1983.github.io/chrono-musical-atlas/
 
@@ -21,7 +21,7 @@ npm test          # Vitest
 ## 新增音乐史节点
 
 1. 在 `src/data/nodes.ts` 的 `RAW_NODES` 中新增一个完整的 `MusicNode`。
-2. 使用唯一 `id`，填写年代、坐标、流派、音乐家、至少两项作品/乐器/特征、80–160 字摘要、雷达值、音型和 `influencedBy`。
+2. 使用唯一 `id`，填写年代、坐标、流派、音乐家、至少两项作品/乐器/特征、80–160 字摘要、机构、典籍、80–220 字故事、雷达值、音型和 `influencedBy`。
 3. `src/data/index.ts` 会自动按 `startYear` 排序，并从 `influencedBy` 派生 `era` 与 `influences`；不需要手写反向边。
 4. 若节点使用了新的音型，先在 `src/audio/patches.ts` 增加对应的纯数据 patch，并为边界行为补充测试。
 
