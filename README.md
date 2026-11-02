@@ -2,6 +2,8 @@
 
 Chrono-Musical Atlas 是一张可交互的世界音乐文明演化地图：用时间轴、地域节点、谱系飞线、程序化声音基因和双卡对比，把跨越数千年的音乐史放在同一张暗黑星图上探索。
 
+在线体验：https://zhangleo-1983.github.io/chrono-musical-atlas/
+
 ## 开发命令
 
 ```bash
