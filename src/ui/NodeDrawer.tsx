@@ -70,5 +70,5 @@ export default function NodeDrawer() {
   useEffect(() => () => audioEngine.stop(), [selectedId]);
   useEffect(() => { const onKey = (event: KeyboardEvent) => { if (event.key !== 'Escape') return; if (compareOpen) setCompareOpen(false); else selectNode(null); }; document.addEventListener('keydown', onKey); return () => document.removeEventListener('keydown', onKey); }, [compareOpen, selectNode, setCompareOpen]);
   if (!node) return null;
-  return <aside className="node-drawer" aria-label={`${node.name}档案`}><DrawerContent key={node.id} node={node} compare={compare} selectNode={(id, opts) => selectNode(id, opts)} addToCompare={addToCompare} /></aside>;
+  return <aside className="node-drawer" aria-label={`${node.name}档案`}><div className="drawer-handle" aria-hidden="true" /><DrawerContent key={node.id} node={node} compare={compare} selectNode={(id, opts) => selectNode(id, opts)} addToCompare={addToCompare} /></aside>;
 }

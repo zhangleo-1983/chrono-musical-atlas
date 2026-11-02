@@ -10,7 +10,7 @@ import './hud.css';
 
 export default function CompareModal() {
   const { compare, compareOpen, setCompareOpen, selectNode } = useAtlasStore(); const a = compare[0] ? NODE_BY_ID.get(compare[0]) : undefined; const b = compare[1] ? NODE_BY_ID.get(compare[1]) : undefined;
-  useEffect(() => { if (!compareOpen) audioEngine.stop(); }, [compareOpen]); useEffect(() => () => audioEngine.stop(), []);
+  useEffect(() => { if (compareOpen) selectNode(null); else audioEngine.stop(); }, [compareOpen, selectNode]); useEffect(() => () => audioEngine.stop(), []);
   if (!compareOpen || !a || !b) return null;
   const relation = a.influencedBy.includes(b.id) ? `${b.name} → ${a.name}` : b.influencedBy.includes(a.id) ? `${a.name} → ${b.name}` : null;
   const jump = (id: string) => { setCompareOpen(false); selectNode(id, { reveal: true, focus: true }); };
