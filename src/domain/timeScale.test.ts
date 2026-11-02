@@ -8,7 +8,7 @@ describe('time scale', () => {
     expect(eraOf(1970)).toBe('contemporary');
   });
   it('round-trips representative years', () => {
-    for (const year of [-1500, -600, 500, 1200, 1600, 1770, 1820, 1900, 1910, 1969, 1970, 2000, 2026]) {
+    for (const year of [-7000, -2600, -1500, -600, 500, 1200, 1600, 1770, 1820, 1900, 1910, 1969, 1970, 2000, 2026]) {
       expect(Math.abs(tToYear(yearToT(year)) - year)).toBeLessThanOrEqual(1);
     }
   });
@@ -16,6 +16,7 @@ describe('time scale', () => {
     expect(eraRangeT('ancient')).toEqual([0, 1 / 6]);
     expect(eraRangeT('contemporary')).toEqual([5 / 6, 1]);
     expect(yearToT(-999)).toBeGreaterThan(0);
+    expect(yearToT(-7000)).toBe(0);
     expect(yearToT(9999)).toBe(1);
   });
 });

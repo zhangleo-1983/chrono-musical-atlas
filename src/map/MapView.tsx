@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { NODES } from '../data';
+import { NODES, ODYSSEYS } from '../data';
 import { GENRE_COLORS } from '../domain/genres';
 import { isVisible, lineage, nodeTimeState } from '../domain/selectors';
 import { useAtlasStore } from '../store/atlasStore';
-import { buildArcs } from './arcs';
+import { buildArcs, buildRouteArcs } from './arcs';
 import { GRID_PATH, LAND_PATH, project, VIEW_H, VIEW_W } from './projection';
 import { clamp, focusOn, IDENTITY, lerpViewport, pan, type Viewport, zoomAt } from './viewport';
 import './map.css';
@@ -16,8 +16,12 @@ const LABEL_OFFSETS: Record<string, { x: number; y: number; anchor: 'start' | 'e
 };
 
 export default function MapView() {
-  const { era, year, genres, showArcs, selectedId, hoveredId, selectNode, setHovered } = useAtlasStore();
+  const { era, year, genres, showArcs, selectedId, hoveredId, odyssey, selectNode, setHovered } = useAtlasStore();
   const arcs = useMemo(() => buildArcs(NODES), []);
+  const activeRoute = odyssey ? ODYSSEYS.find((route) => route.id === odyssey.routeId) : undefined;
+  const routeStops = activeRoute?.stops.map((id) => NODES.find((node) => node.id === id)).filter((node): node is typeof NODES[number] => node !== undefined) ?? [];
+  const routeArcs = useMemo(() => buildRouteArcs(routeStops), [activeRoute?.id]);
+  const routeNodeIds = useMemo(() => new Set(routeStops.map((node) => node.id)), [activeRoute?.id]);
   const focusNonce = useAtlasStore((state) => state.focus?.nonce);
   const [isZoomed, setIsZoomed] = useState(false);
   const zoomedRef = useRef(false);
@@ -38,8 +42,11 @@ export default function MapView() {
   const selectedLineage = useMemo(() => selectedId ? lineage(selectedId, new Map(NODES.map((node) => [node.id, node]))) : { nodeIds: new Set<string>(), edgeKeys: new Set<string>() }, [selectedId]);
   const visible = (id: string) => { const node = NODES.find((item) => item.id === id); return node ? isVisible(node, { era, year, genres }) : false; };
   const arcVisible = (from: string, to: string) => showArcs && visible(from) && visible(to) && nodeTimeState(NODES.find((node) => node.id === from)!, era, year) !== 'future' && nodeTimeState(NODES.find((node) => node.id === to)!, era, year) !== 'future';
-  const orderedNodes = [...NODES.filter((node) => visible(node.id))].sort((a, b) => Number(selectedLineage.nodeIds.has(a.id)) - Number(selectedLineage.nodeIds.has(b.id)));
-  const orderedArcs = [...arcs.filter((arc) => arcVisible(arc.from, arc.to))].sort((a, b) => Number(selectedLineage.edgeKeys.has(a.key)) - Number(selectedLineage.edgeKeys.has(b.key)));
+  const highlightedNodeIds = odyssey ? routeNodeIds : selectedLineage.nodeIds;
+  const highlightedEdgeKeys = odyssey ? new Set(routeArcs.map((arc) => arc.key)) : selectedLineage.edgeKeys;
+  const orderedNodes = [...NODES.filter((node) => visible(node.id))].sort((a, b) => Number(highlightedNodeIds.has(a.id)) - Number(highlightedNodeIds.has(b.id)));
+  const orderedArcs = [...arcs.filter((arc) => arcVisible(arc.from, arc.to))].sort((a, b) => Number(highlightedEdgeKeys.has(a.key)) - Number(highlightedEdgeKeys.has(b.key)));
+  const visibleRouteArcs = routeArcs.filter((arc) => visible(arc.from) && visible(arc.to));
 
   return <div className="map-shell">
     <svg ref={svgRef} className="map-svg" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} aria-label="世界音乐史地图" onClick={() => { if (!ignoreNextClick.current) selectNode(null); ignoreNextClick.current = false; }} onPointerDown={(event) => { cancelAnimation(); const point = viewBoxPoint(event.nativeEvent); pointerRef.current = { id: event.pointerId, x: point[0], y: point[1], moved: false, captured: false }; }} onPointerMove={(event) => { if (pointerRef.current.id !== event.pointerId) return; const point = viewBoxPoint(event.nativeEvent); const dx = point[0] - pointerRef.current.x; const dy = point[1] - pointerRef.current.y; if (!pointerRef.current.moved && Math.hypot(dx, dy) > 4) { pointerRef.current.moved = true; svgRef.current?.setPointerCapture(event.pointerId); pointerRef.current.captured = true; } if (pointerRef.current.moved) applyViewport(pan(viewportRef.current, dx, dy)); pointerRef.current.x = point[0]; pointerRef.current.y = point[1]; }} onPointerUp={(event) => { if (pointerRef.current.id !== event.pointerId) return; if (pointerRef.current.captured && svgRef.current?.hasPointerCapture(event.pointerId)) svgRef.current.releasePointerCapture(event.pointerId); if (pointerRef.current.moved) { ignoreNextClick.current = true; window.setTimeout(() => { ignoreNextClick.current = false; }, 0); } pointerRef.current = { id: -1, x: 0, y: 0, moved: false, captured: false }; }} onPointerCancel={(event) => { if (pointerRef.current.id !== event.pointerId) return; if (pointerRef.current.captured && svgRef.current?.hasPointerCapture(event.pointerId)) svgRef.current.releasePointerCapture(event.pointerId); ignoreNextClick.current = true; pointerRef.current = { id: -1, x: 0, y: 0, moved: false, captured: false }; }}>
@@ -53,10 +60,11 @@ export default function MapView() {
         <path className="map-grid" d={GRID_PATH} />
         <path className="map-land" d={LAND_PATH} />
         <path d={LAND_PATH} fill="url(#map-dots)" opacity="0.5" />
-        {showArcs && <g>{orderedArcs.map((arc) => { const highlighted = selectedLineage.edgeKeys.has(arc.key); const dimmed = selectedId !== null && !highlighted; return <path key={arc.key} className={`map-arc ${highlighted ? 'is-lineage' : ''} ${dimmed ? 'is-dim' : ''}`} style={{ '--arc-color': GENRE_COLORS[NODES.find((n) => n.id === arc.to)!.genre] } as React.CSSProperties} d={arc.d} />; })}</g>}
+        {showArcs && <g>{orderedArcs.map((arc) => { const highlighted = highlightedEdgeKeys.has(arc.key) && !odyssey; const dimmed = odyssey || (selectedId !== null && !highlighted); return <path key={arc.key} className={`map-arc ${highlighted ? 'is-lineage' : ''} ${dimmed ? 'is-dim' : ''}`} style={{ '--arc-color': GENRE_COLORS[NODES.find((n) => n.id === arc.to)!.genre] } as React.CSSProperties} d={arc.d} />; })}</g>}
+        {odyssey && <g>{visibleRouteArcs.map((arc) => { const current = activeRoute?.stops[odyssey.index] === arc.from || activeRoute?.stops[odyssey.index] === arc.to; return <path key={arc.key} className={`map-route-arc ${current ? 'is-current' : ''}`} style={{ '--arc-color': GENRE_COLORS[NODES.find((n) => n.id === arc.to)!.genre] } as React.CSSProperties} d={arc.d} />; })}</g>}
       <g>{orderedNodes.map((node) => {
-        const [x, y] = project(node.lon, node.lat); const state = nodeTimeState(node, era, year); const highlighted = selectedLineage.nodeIds.has(node.id); const dimmed = selectedId !== null && !highlighted; const showLabel = node.influence === 5 || hoveredId === node.id || selectedId === node.id || isZoomed; const label = LABEL_OFFSETS[node.id] ?? { x: 9, y: -8, anchor: 'start' as const };
-        return <g key={node.id} transform={`translate(${x} ${y})`} className={`map-node-group ${dimmed ? 'is-dim' : ''} ${state === 'past' ? 'is-past' : ''} ${highlighted ? 'is-highlighted' : ''}`} onMouseEnter={() => setHovered(node.id)} onMouseLeave={() => setHovered(null)} onClick={(event) => { event.stopPropagation(); selectNode(node.id); }}>
+        const [x, y] = project(node.lon, node.lat); const state = nodeTimeState(node, era, year); const highlighted = highlightedNodeIds.has(node.id); const dimmed = odyssey ? !highlighted : selectedId !== null && !highlighted; const current = odyssey && activeRoute?.stops[odyssey.index] === node.id; const showLabel = node.influence === 5 || hoveredId === node.id || selectedId === node.id || isZoomed; const label = LABEL_OFFSETS[node.id] ?? { x: 9, y: -8, anchor: 'start' as const };
+        return <g key={node.id} transform={`translate(${x} ${y})`} className={`map-node-group ${dimmed ? 'is-dim' : ''} ${state === 'past' ? 'is-past' : ''} ${highlighted ? 'is-highlighted' : ''} ${current ? 'is-odyssey-current' : ''}`} onMouseEnter={() => setHovered(node.id)} onMouseLeave={() => setHovered(null)} onClick={(event) => { event.stopPropagation(); selectNode(node.id); }}>
           <g className="map-node-detail"><circle cx="0" cy="0" r={node.influence * 5 + 7} fill={`url(#glow-${node.id})`} opacity="0.45" /><circle className="map-node-core" cx="0" cy="0" r={2.2 + node.influence * 0.8} fill={GENRE_COLORS[node.genre]} /><circle className="map-node-hit" cx="0" cy="0" r="8" />{showLabel && <text className="map-node-label" x={label.x} y={label.y} textAnchor={label.anchor}>{node.name}</text>}</g>
         </g>;
       })}</g>

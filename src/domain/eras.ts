@@ -3,7 +3,7 @@ import type { EraId } from './types';
 export const PRESENT_YEAR = 2026;
 export const ERA_IDS: EraId[] = ['ancient', 'medieval', 'baroque', 'romantic', 'modern', 'contemporary'];
 export const ERAS: Record<EraId, { id: EraId; label: string; start: number; end: number }> = {
-  ancient: { id: 'ancient', label: '远古-500 AD', start: -1500, end: 500 },
+  ancient: { id: 'ancient', label: '远古与古典礼乐 (前7000—500)', start: -7000, end: 500 },
   medieval: { id: 'medieval', label: '中世纪与文艺复兴 (500-1600)', start: 500, end: 1600 },
   baroque: { id: 'baroque', label: '巴洛克与古典 (1600-1820)', start: 1600, end: 1820 },
   romantic: { id: 'romantic', label: '浪漫与民族 (1820-1910)', start: 1820, end: 1910 },

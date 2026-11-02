@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { PATCHES, patchCycleLength, stepTime } from './patches';
+import { BELL_PARTIALS, PATCHES, patchCycleLength, stepTime } from './patches';
 
 describe('audio patches', () => {
-  it('contains eight distinct bounded patterns', () => {
+  it('contains all registered bounded patterns', () => {
     const patches = Object.values(PATCHES);
-    expect(patches).toHaveLength(8);
+    expect(patches).toHaveLength(13);
     for (const patch of patches) {
       const length = patchCycleLength(patch);
       for (const event of patch.events) {
@@ -17,7 +17,10 @@ describe('audio patches', () => {
     expect(pentatonic.events.every((event) => event.midi !== undefined && [0, 2, 4, 7, 9].includes(event.midi % 12))).toBe(true);
     for (let i = 0; i < 10; i += 1) expect(stepTime(i, { ...pentatonic, swing: 0 })).toBeCloseTo(i * 60 / pentatonic.bpm / pentatonic.stepsPerBeat);
     const signatures = patches.map((patch) => `${patch.bpm}:${JSON.stringify(patch.events)}`);
-    expect(new Set(signatures).size).toBe(8);
+    expect(new Set(signatures).size).toBe(13);
+    const silkUd = PATCHES['silk-ud'].events.filter((event) => event.voice === 'ud');
+    expect(silkUd.some((event, index) => event.midi === 63 && silkUd[index + 1]?.midi === 66)).toBe(true);
+    expect(BELL_PARTIALS.some((partial) => !Number.isInteger(partial))).toBe(true);
     const classicalStep = PATCHES['classical-strings'].events.filter((event) => event.step === 0).flatMap((event) => event.midi === undefined ? [] : [event.midi]);
     expect(new Set(classicalStep).size).toBeGreaterThanOrEqual(3);
     const rockStep = PATCHES['rock-distortion'].events.filter((event) => event.step === 0).flatMap((event) => event.midi === undefined ? [] : [event.midi]);
@@ -32,5 +35,6 @@ describe('audio patches', () => {
       const chordStart = event.step < 4 ? 0 : event.step < 8 ? 4 : 8;
       return event.midi !== undefined && swingChordTones[chordStart]!.has(event.midi % 12);
     })).toBe(true);
+    expect(swingBassPitches.filter((event) => event.step >= 4 && event.step < 8).every((event) => event.midi !== undefined && event.midi % 12 !== 10)).toBe(true);
   });
 });

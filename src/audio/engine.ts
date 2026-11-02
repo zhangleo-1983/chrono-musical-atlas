@@ -1,14 +1,17 @@
 import type { PatchId } from '../domain/types';
-import { PATCHES, patchCycleLength, stepTime, type NoteEvent, type Patch, type Voice } from './patches';
+import { BELL_PARTIALS, PATCHES, patchCycleLength, stepTime, type NoteEvent, type Patch, type Voice } from './patches';
+import { generateImpulse } from './impulse';
 
 export interface AudioState { playingKey: string | null; muted: boolean; supported: boolean }
-interface Session { token: number; key: string; patch: Patch; gain: GainNode; timer: number; cycleStart: number; nextStep: number; nextTime: number; }
+interface Session { token: number; key: string; patch: Patch; gain: GainNode; send: GainNode | null; timer: number; cycleStart: number; nextStep: number; nextTime: number; }
 
 const listeners = new Set<() => void>();
 let state: AudioState = { playingKey: null, muted: false, supported: Boolean(contextConstructor()) };
 let context: AudioContext | null = null;
 let master: GainNode | null = null;
 let analyser: AnalyserNode | null = null;
+let reverb: ConvolverNode | null = null;
+let impulseBuffer: AudioBuffer | null = null;
 let session: Session | null = null;
 let sessionToken = 0;
 let noiseBuffer: AudioBuffer | null = null;
@@ -31,6 +34,17 @@ function createGraph(): AudioContext | null {
   const compressor = context.createDynamicsCompressor(); compressor.threshold.value = -10; compressor.knee.value = 12; compressor.ratio.value = 8;
   analyser = context.createAnalyser(); analyser.fftSize = 128; analyser.smoothingTimeConstant = 0.78;
   master.connect(compressor).connect(analyser).connect(context.destination);
+  if (typeof context.createConvolver === 'function') {
+    reverb = context.createConvolver();
+    if (!impulseBuffer || impulseBuffer.sampleRate !== context.sampleRate) {
+      const [left, right] = generateImpulse(2.2, context.sampleRate);
+      impulseBuffer = context.createBuffer(2, left.length, context.sampleRate);
+      impulseBuffer.getChannelData(0).set(left);
+      impulseBuffer.getChannelData(1).set(right);
+    }
+    reverb.buffer = impulseBuffer;
+    reverb.connect(master);
+  }
   if (!state.supported) updateState({ supported: true });
   return context;
 }
@@ -75,15 +89,83 @@ function scheduleOsc(ctx: AudioContext, parent: GainNode, event: NoteEvent, when
   gain.connect(parent); connectOscillator(osc, gain, when, end, peak * event.vel, attack);
 }
 
-function scheduleNoise(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number, stepSeconds: number, high: boolean): void {
+function scheduleFrequencyOsc(ctx: AudioContext, parent: GainNode, when: number, end: number, frequency: number, type: OscillatorType, peak: number, attack: number, detune = 0, filter?: BiquadFilterType, filterFrequency = 4200): OscillatorNode {
+  const osc = ctx.createOscillator(); osc.type = type; osc.frequency.value = frequency; osc.detune.value = detune;
+  const gain = ctx.createGain(); gain.gain.value = 0.0001;
+  if (filter) { const filterNode = ctx.createBiquadFilter(); filterNode.type = filter; filterNode.frequency.value = filterFrequency; osc.connect(filterNode); filterNode.connect(gain); }
+  else osc.connect(gain);
+  gain.connect(parent); connectOscillator(osc, gain, when, end, peak, attack);
+  return osc;
+}
+
+function scheduleBoneFlute(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number, stepSeconds: number): void {
+  if (event.midi === undefined) return;
+  const end = when + Math.max(0.18, event.durSteps * stepSeconds);
+  const frequency = midiFrequency(event.midi);
+  const base = scheduleFrequencyOsc(ctx, parent, when, end, frequency, 'sine', 0.2 * event.vel, 0.06, -30);
+  base.detune.setValueAtTime(-30, when); base.detune.linearRampToValueAtTime(0, when + 0.06);
+  const second = scheduleFrequencyOsc(ctx, parent, when, end, frequency * 2, 'sine', 0.07 * event.vel, 0.06, -18);
+  const third = scheduleFrequencyOsc(ctx, parent, when, end, frequency * 3, 'triangle', 0.045 * event.vel, 0.06, -12);
+  const depth = ctx.createGain(); depth.gain.value = 15;
+  const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 5; lfo.connect(depth); depth.connect(base.detune); depth.connect(second.detune); depth.connect(third.detune);
+  const baseEnded = base.onended;
+  base.onended = () => { baseEnded?.call(base, new Event('ended')); depth.disconnect(base.detune); depth.disconnect(second.detune); depth.disconnect(third.detune); };
+  lfo.start(when); lfo.stop(end + 0.03); lfo.onended = () => lfo.disconnect();
+  scheduleNoise(ctx, parent, event, when, stepSeconds, false, Math.min(0.22, end - when));
+}
+
+function scheduleBronzeBell(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number): void {
+  if (event.midi === undefined) return;
+  const fundamental = midiFrequency(event.midi);
+  BELL_PARTIALS.forEach((partial, index) => {
+    const end = when + 2.5 / (1 + index * 0.5);
+    const detunes = index === 0 ? [-3, 3] : [0];
+    detunes.forEach((detune) => scheduleFrequencyOsc(ctx, parent, when, end, fundamental * partial, 'sine', (0.16 / (index + 1)) * event.vel, 0.003, detune));
+  });
+  scheduleNoise(ctx, parent, event, when, 0, false, 0.06);
+}
+
+function scheduleStringPluck(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number, duration: number, resonance: number): void {
+  if (event.midi === undefined) return;
+  const end = when + duration;
+  const frequency = midiFrequency(event.midi);
+  scheduleNoise(ctx, parent, event, when, 0, false, 0.008);
+  scheduleFrequencyOsc(ctx, parent, when, end, frequency, 'triangle', 0.18 * event.vel, 0.002, 0, 'bandpass', resonance);
+  scheduleFrequencyOsc(ctx, parent, when, end, frequency * 2, 'triangle', 0.07 * event.vel, 0.002, 0, 'bandpass', resonance);
+  scheduleFrequencyOsc(ctx, parent, when, end, frequency * 3, 'triangle', 0.04 * event.vel, 0.002, 0, 'bandpass', resonance);
+}
+
+function scheduleOrgan(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number, stepSeconds: number): void {
+  if (event.midi === undefined) return;
+  const end = when + Math.max(0.2, event.durSteps * stepSeconds);
+  const frequency = midiFrequency(event.midi);
+  scheduleFrequencyOsc(ctx, parent, when, end, frequency, 'sine', 0.14 * event.vel, 0.05, -6, 'lowpass', 2200);
+  scheduleFrequencyOsc(ctx, parent, when, end, frequency * 2, 'sine', 0.1 * event.vel, 0.05, 0, 'lowpass', 2200);
+  scheduleFrequencyOsc(ctx, parent, when, end, frequency * 3, 'sine', 0.06 * event.vel, 0.05, 6, 'lowpass', 2200);
+}
+
+function scheduleFrameDrum(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number, stepSeconds: number): void {
+  const end = when + Math.max(0.12, event.durSteps * stepSeconds);
+  const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(140, when); osc.frequency.exponentialRampToValueAtTime(60, end);
+  const gain = ctx.createGain(); gain.connect(parent); connectOscillator(osc, gain, when, end, 0.3 * event.vel, 0.002);
+  scheduleNoise(ctx, parent, event, when, stepSeconds, false, Math.min(0.08, end - when));
+}
+
+function scheduleNoise(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number, stepSeconds: number, high: boolean, duration?: number): void {
   const source = ctx.createBufferSource(); source.buffer = getNoiseBuffer(ctx);
   const filter = ctx.createBiquadFilter(); filter.type = high ? 'highpass' : 'bandpass'; filter.frequency.value = high ? 6500 : 1800;
-  const gain = ctx.createGain(); const end = when + Math.max(0.04, event.durSteps * stepSeconds); gain.connect(parent); source.connect(filter); filter.connect(gain);
+  const gain = ctx.createGain(); const end = when + Math.max(0.04, duration ?? event.durSteps * stepSeconds); gain.connect(parent); source.connect(filter); filter.connect(gain);
   envelope(gain, when, 0.002, end - when, 0.16 * event.vel); source.start(when); source.stop(end); source.onended = () => { source.disconnect(); filter.disconnect(); gain.disconnect(); };
 }
 
 function scheduleVoice(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number, stepSeconds: number, voice: Voice): void {
   const end = when + Math.max(0.06, event.durSteps * stepSeconds);
+  if (voice === 'boneFlute') { scheduleBoneFlute(ctx, parent, event, when, stepSeconds); return; }
+  if (voice === 'bronzeBell') { scheduleBronzeBell(ctx, parent, event, when); return; }
+  if (voice === 'lyre') { scheduleStringPluck(ctx, parent, event, when, 1.2, 800); return; }
+  if (voice === 'ud') { scheduleStringPluck(ctx, parent, event, when, 0.5, 1100); return; }
+  if (voice === 'organ') { scheduleOrgan(ctx, parent, event, when, stepSeconds); return; }
+  if (voice === 'frameDrum') { scheduleFrameDrum(ctx, parent, event, when, stepSeconds); return; }
   if (voice === 'kick') {
     const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sine'; osc.frequency.setValueAtTime(150, when); osc.frequency.exponentialRampToValueAtTime(45, end); gain.connect(parent); connectOscillator(osc, gain, when, end, 0.72 * event.vel, 0.002); return;
   }
@@ -113,7 +195,7 @@ function fadeSession(old: Session | null): void {
   window.clearInterval(old.timer);
   const now = context.currentTime;
   old.gain.gain.cancelScheduledValues(now); old.gain.gain.setValueAtTime(Math.max(0.0001, old.gain.gain.value), now); old.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
-  window.setTimeout(() => old.gain.disconnect(), 50);
+  window.setTimeout(() => { old.gain.disconnect(); old.send?.disconnect(); }, 50);
 }
 
 function scheduler(active: Session): void {
@@ -135,8 +217,13 @@ export const audioEngine = {
     try { await ctx.resume(); } catch { return; }
     if (token !== sessionToken || !master) return;
     fadeSession(session);
+    const patch = PATCHES[patchId];
     const gain = ctx.createGain(); gain.gain.setValueAtTime(0.0001, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 0.03); gain.connect(master);
-    const patch = PATCHES[patchId]; const cycleStart = ctx.currentTime + 0.05; const active: Session = { token, key, patch, gain, timer: 0, cycleStart, nextStep: 0, nextTime: cycleStart };
+    let send: GainNode | null = null;
+    if (patch.wet > 0 && reverb) {
+      send = ctx.createGain(); send.gain.value = patch.wet; send.connect(reverb); gain.connect(send);
+    }
+    const cycleStart = ctx.currentTime + 0.05; const active: Session = { token, key, patch, gain, send, timer: 0, cycleStart, nextStep: 0, nextTime: cycleStart };
     session = active; setPlaying(key); scheduler(active); active.timer = window.setInterval(() => scheduler(active), 25);
   },
   stop(): void {

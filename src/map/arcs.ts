@@ -24,3 +24,11 @@ export function buildArcs(nodes: ResolvedNode[]): Arc[] {
     return [{ key: `${parent.id}->${node.id}`, from: parent.id, to: node.id, d: arcPath(project(parent.lon, parent.lat), project(node.lon, node.lat)) }];
   }));
 }
+
+export function buildRouteArcs(stops: ResolvedNode[]): Arc[] {
+  return stops.slice(0, -1).flatMap((from, index) => {
+    const to = stops[index + 1];
+    if (!to) return [];
+    return [{ key: `route:${from.id}->${to.id}`, from: from.id, to: to.id, d: arcPath(project(from.lon, from.lat), project(to.lon, to.lat)) }];
+  });
+}
