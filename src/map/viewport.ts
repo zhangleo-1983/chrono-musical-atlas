@@ -60,12 +60,15 @@ export function pinch(v: Viewport, a0: [number, number], b0: [number, number], a
   }, box);
 }
 
-export function focusCenter(box: VisibleBox, containerH: number, topPx: number, bottomPx: number): [number, number] {
+export function focusCenter(box: VisibleBox, containerW: number, containerH: number, leftPx: number, rightPx: number, topPx: number, bottomPx: number): [number, number] {
+  const visibleWidth = box.x1 - box.x0;
   const visibleHeight = box.y1 - box.y0;
-  if (containerH <= 0 || visibleHeight <= 0) return [(box.x0 + box.x1) / 2, (box.y0 + box.y1) / 2];
+  if (containerW <= 0 || containerH <= 0 || visibleWidth <= 0 || visibleHeight <= 0) return [(box.x0 + box.x1) / 2, (box.y0 + box.y1) / 2];
+  const left = Math.max(0, Math.min(containerW, leftPx));
+  const right = Math.max(left, Math.min(containerW, rightPx));
   const top = Math.max(0, Math.min(containerH, topPx));
   const bottom = Math.max(top, Math.min(containerH, bottomPx));
-  return [(box.x0 + box.x1) / 2, box.y0 + ((top + bottom) / 2 / containerH) * visibleHeight];
+  return [box.x0 + ((left + right) / 2 / containerW) * visibleWidth, box.y0 + ((top + bottom) / 2 / containerH) * visibleHeight];
 }
 
 export function focusOn(point: [number, number], k: number, center: [number, number]): Viewport { const zoom = Math.max(1, Math.min(8, k)); return { k: zoom, x: center[0] - point[0] * zoom, y: center[1] - point[1] * zoom }; }

@@ -24,6 +24,7 @@
 @keyframes arc-flow { to { stroke-dashoffset: -44; } }
 @media (prefers-reduced-motion: reduce) { .map-node-core, .map-arc { animation: none; } }
 @media (max-width: 1023px) {
+  .map-node-label { font-size: 9px; }
   .map-reset { top: calc(var(--hud-top-offset) + var(--hud-top-height) + 52px); right: 10px; left: auto; bottom: auto; z-index: 5; width: 40px; height: 40px; padding: 0; border-radius: 50%; font-size: 20px; line-height: 1; }
   .map-reset.is-obscured { display: none; }
 }

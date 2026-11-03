@@ -3,16 +3,29 @@ export type GenreId = 'ritual' | 'classical' | 'folk' | 'blues_jazz' | 'rock_pop
 export type Continent = 'asia' | 'europe' | 'africa' | 'americas';
 export type PatchId = 'pentatonic-pluck' | 'modal-drone' | 'polyrhythm-drums' | 'baroque-harpsichord' | 'classical-strings' | 'swing-jazz' | 'rock-distortion' | 'electro-pulse' | 'bone-flute' | 'bronze-bells' | 'ancient-lyre' | 'silk-ud' | 'hydraulis-organ';
 export type FigureId = 'flute' | 'bells' | 'qin' | 'lyre' | 'harmonic' | 'lute' | 'organ' | 'rhythm';
+export type Voice = 'pluck' | 'piano' | 'drone' | 'harpsichord' | 'strings' | 'epiano' | 'bass' | 'distGuitar' | 'synthPulse' | 'kick' | 'snare' | 'hat' | 'djembeLow' | 'djembeHigh' | 'bell' | 'boneFlute' | 'bronzeBell' | 'lyre' | 'ud' | 'organ' | 'frameDrum';
+export interface MotifEvent { step: number; midi: number | number[]; durSteps: number; vel?: number }
+export interface Motif { bpm: number; stepsPerBeat: number; voice: Voice; wet: number; events: MotifEvent[] }
 
 export interface Radar { rhythm: number; harmony: number; improvisation: number; ensemble: number; fusion: number }
 export interface Musician { name: string; nameEn: string; lifespan: string; knownFor: string }
 export interface ArtifactImage { file: string; src: string; page: string; license: string; credit: string; caption: string }
+export interface WorkItem {
+  id: string; title: string; subtitle: string; guide: string; searchQuery: string;
+  publicDomain: boolean; pdBasis: string; motif?: Motif; motifKind?: 'theme' | 'evocation'; motifSource?: string;
+}
+export interface NotationGlyph { symbol: string; modern: string; meaning: string; midi: number | number[] }
+export interface NotationSpec {
+  system: string; eraNote: string; source: string;
+  basis: 'surviving-score' | 'theory-system' | 'later-system'; referenceKey: string; glyphs: NotationGlyph[];
+}
 export interface MusicNode {
   id: string; name: string; nameEn: string; startYear: number; endYear: number | null;
   city: string; region: string; continent: Continent; lat: number; lon: number; genre: GenreId;
   influence: 1 | 2 | 3 | 4 | 5; musicians: Musician[]; works: string[]; instruments: string[];
   traits: string[]; summary: string; artifact: string; tuningSystem: string; institution: string; treatises: string[]; story: string;
   searchQuery?: string; figure?: FigureId; radar: Radar; patch: PatchId; influencedBy: string[];
+  repertoire: WorkItem[]; notation?: NotationSpec; notationAbsentNote?: string;
 }
 export interface ResolvedNode extends MusicNode { era: EraId; influences: string[] }
 export interface ComparePreset { id: string; label: string; a: string; b: string }

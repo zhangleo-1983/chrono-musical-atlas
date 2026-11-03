@@ -33,13 +33,14 @@ describe('viewport math', () => {
     expect(pinch(before, [100, 100], [100, 100], [50, 100], [250, 100])).toEqual(before);
   });
   it('centers focus inside the actual exposed screen interval', () => {
-    const portraitCenter = focusCenter(FULL_BOX, 812, 190, 341);
+    const portraitCenter = focusCenter(FULL_BOX, 375, 812, 0, 375, 190, 341);
     expect(portraitCenter[0]).toBe(500);
     expect(portraitCenter[1]).toBeCloseTo(170.02, 1);
     const sliced = visibleBox(812, 375, 'slice');
-    const center = focusCenter(sliced, 375, 52, 275);
-    expect(center[0]).toBeCloseTo((sliced.x0 + sliced.x1) / 2);
-    expect(center[1]).toBeCloseTo(sliced.y0 + ((52 + 275) / 2 / 375) * (sliced.y1 - sliced.y0));
+    const center = focusCenter(sliced, 812, 375, 0, 430, 52, 375);
+    expect(center[0]).toBeLessThan((sliced.x0 + sliced.x1) / 2);
+    expect(center[0]).toBeCloseTo(sliced.x0 + (430 / 2 / 812) * (sliced.x1 - sliced.x0));
+    expect(center[1]).toBeCloseTo(sliced.y0 + ((52 + 375) / 2 / 375) * (sliced.y1 - sliced.y0));
   });
   it('focuses and interpolates endpoints', () => {
     expect(focusOn([100, 80], 3, [500, 260])).toEqual({ k: 3, x: 200, y: 20 });

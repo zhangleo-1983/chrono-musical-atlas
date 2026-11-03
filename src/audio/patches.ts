@@ -1,6 +1,7 @@
-import type { PatchId } from '../domain/types';
+import type { Motif, PatchId, Voice as DomainVoice } from '../domain/types';
 
-export type Voice = 'pluck' | 'drone' | 'harpsichord' | 'strings' | 'epiano' | 'bass' | 'distGuitar' | 'synthPulse' | 'kick' | 'snare' | 'hat' | 'djembeLow' | 'djembeHigh' | 'bell' | 'boneFlute' | 'bronzeBell' | 'lyre' | 'ud' | 'organ' | 'frameDrum';
+export type Voice = DomainVoice;
+export type { Motif };
 export interface NoteEvent { step: number; voice: Voice; midi?: number; durSteps: number; vel: number }
 export interface Patch { id: PatchId; label: string; bpm: number; stepsPerBeat: number; swing: number; bars: number; beatsPerBar: number; wet: number; events: NoteEvent[] }
 

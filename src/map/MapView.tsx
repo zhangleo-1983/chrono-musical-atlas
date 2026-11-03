@@ -11,9 +11,22 @@ import './map.css';
 
 const STARS = Array.from({ length: 90 }, (_, i) => ({ x: (i * 83) % VIEW_W, y: (i * 47) % VIEW_H, r: i % 7 === 0 ? 1.2 : 0.55 }));
 const LABEL_OFFSETS: Record<string, { x: number; y: number; anchor: 'start' | 'end' }> = {
+  'jiahu-flute': { x: -58, y: -18, anchor: 'end' },
+  'zhou-ritual': { x: -62, y: 21, anchor: 'end' },
+  'zenghouyi-bells': { x: 28, y: 30, anchor: 'start' },
+  'han-wei-yuefu': { x: -42, y: 48, anchor: 'end' },
+  'peking-opera': { x: 28, y: -18, anchor: 'start' },
+  'gagaku': { x: -38, y: -20, anchor: 'end' },
+  'tokyo-electro': { x: 30, y: 22, anchor: 'start' },
+  'sumer-lyre': { x: 50, y: -55, anchor: 'start' },
+  'hurrian-hymn': { x: -48, y: -18, anchor: 'end' },
+  'hebrew-temple': { x: 34, y: 22, anchor: 'start' },
+  'greek-modes': { x: -58, y: -22, anchor: 'end' },
+  'roman-hydraulis': { x: 50, y: 48, anchor: 'start' },
+  'gregorian-chant': { x: -54, y: -18, anchor: 'end' },
   'leipzig-baroque': { x: 12, y: -24, anchor: 'start' },
   'vienna-classical': { x: 10, y: 18, anchor: 'start' },
-  'london-rock': { x: -20, y: 14, anchor: 'end' },
+  'london-rock': { x: -24, y: 14, anchor: 'end' },
 };
 
 export default function MapView() {
@@ -61,7 +74,7 @@ export default function MapView() {
     const onWheel = (event: WheelEvent) => { event.preventDefault(); cancelAnimation(); const point = viewBoxPoint(event); applyViewport(zoomAt(viewportRef.current, point[0], point[1], Math.exp(-event.deltaY * 0.001), visibleBoxRef.current)); };
     svg.addEventListener('wheel', onWheel, { passive: false }); return () => svg.removeEventListener('wheel', onWheel);
   }, []);
-  useEffect(() => { const target = useAtlasStore.getState().focus; if (!target) return; const node = NODES.find((item) => item.id === target.id); if (!node) return; const point = project(node.lon, node.lat); const selected = useAtlasStore.getState().selectedId; const box = visibleBoxRef.current; const center: [number, number] = compact ? (() => { const shellHeight = shellRef.current?.getBoundingClientRect().height ?? 0; const hudBottom = document.querySelector('.hud-top')?.getBoundingClientRect().bottom ?? 0; const odysseyBottom = document.querySelector('.odyssey-bar')?.getBoundingClientRect().bottom ?? 0; const topPx = Math.max(hudBottom, odysseyBottom); const drawerTop = document.querySelector('.node-drawer')?.getBoundingClientRect().top; const bottomPx = drawerTop ?? shellHeight - Math.min(shellHeight * 0.58, 520); return focusCenter(box, shellHeight, topPx, bottomPx); })() : selected ? [VIEW_W * 0.38, VIEW_H * 0.5] : [VIEW_W / 2, VIEW_H / 2]; animateTo(focusOn(point, Math.max(viewportRef.current.k, 3), center)); }, [focusNonce, compact]);
+  useEffect(() => { const target = useAtlasStore.getState().focus; if (!target) return; const node = NODES.find((item) => item.id === target.id); if (!node) return; const point = project(node.lon, node.lat); const selected = useAtlasStore.getState().selectedId; const box = visibleBoxRef.current; const center: [number, number] = compact ? (() => { const shell = shellRef.current?.getBoundingClientRect(); const shellWidth = shell?.width ?? 0; const shellHeight = shell?.height ?? 0; const hudBottom = document.querySelector('.hud-top')?.getBoundingClientRect().bottom ?? 0; const odysseyBottom = document.querySelector('.odyssey-bar')?.getBoundingClientRect().bottom ?? 0; const drawer = document.querySelector('.node-drawer')?.getBoundingClientRect(); const landscape = shellHeight <= 500; const topPx = Math.max(hudBottom, odysseyBottom); const bottomPx = landscape ? shellHeight : drawer?.top ?? shellHeight - Math.min(shellHeight * 0.58, 520); const rightPx = landscape ? drawer?.left ?? shellWidth : shellWidth; return focusCenter(box, shellWidth, shellHeight, 0, rightPx, topPx, bottomPx); })() : selected ? [VIEW_W * 0.38, VIEW_H * 0.5] : [VIEW_W / 2, VIEW_H / 2]; animateTo(focusOn(point, Math.max(viewportRef.current.k, 3), center)); }, [focusNonce]);
   const selectedLineage = useMemo(() => selectedId ? lineage(selectedId, new Map(NODES.map((node) => [node.id, node]))) : { nodeIds: new Set<string>(), edgeKeys: new Set<string>() }, [selectedId]);
   const visible = (id: string) => { const node = NODES.find((item) => item.id === id); return node ? isVisible(node, { era, year, genres }) : false; };
   const arcVisible = (from: string, to: string) => showArcs && visible(from) && visible(to) && nodeTimeState(NODES.find((node) => node.id === from)!, era, year) !== 'future' && nodeTimeState(NODES.find((node) => node.id === to)!, era, year) !== 'future';

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { audioEngine } from '../audio/engine';
 import { PATCHES } from '../audio/patches';
 import { ARTIFACT_IMAGES, NODE_BY_ID } from '../data';
@@ -11,6 +11,8 @@ import BlueprintFigure from './BlueprintFigure';
 import ArtifactLightbox from './ArtifactLightbox';
 import { RADAR_AXES } from './radar';
 import SoundPlayer from './SoundPlayer';
+import RepertoireList from './RepertoireList';
+import NotationDecoder from './NotationDecoder';
 import './hud.css';
 
 const TABS = ['🎵 概览名曲', '👤 人物典故', '🏛️ 制度典籍', '📐 器物律制'] as const;
@@ -36,8 +38,8 @@ function DrawerContent({ node, compare, selectNode, addToCompare }: { node: Reso
   const spotify = `https://open.spotify.com/search/${encodeURIComponent(searchQuery)}`;
   const youtube = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`;
   const artifactImage = ARTIFACT_IMAGES[node.id];
-  const openArtifact = (trigger: HTMLButtonElement) => { artifactTriggerRef.current = trigger; setArtifactOpen(true); };
-  const closeArtifact = () => setArtifactOpen(false);
+  const openArtifact = useCallback((trigger: HTMLButtonElement) => { artifactTriggerRef.current = trigger; setArtifactOpen(true); }, []);
+  const closeArtifact = useCallback(() => setArtifactOpen(false), []);
   const moveTab = (direction: number) => setActiveTab((current) => {
     const next = (current + direction + TABS.length) % TABS.length;
     requestAnimationFrame(() => tabRefs.current[next]?.focus());
@@ -54,9 +56,9 @@ function DrawerContent({ node, compare, selectNode, addToCompare }: { node: Reso
       {TABS.map((label, index) => <button type="button" role="tab" key={label} ref={(element) => { tabRefs.current[index] = element; }} id={`drawer-tab-${index}`} aria-controls="drawer-tabpanel" aria-selected={activeTab === index} tabIndex={activeTab === index ? 0 : -1} onClick={() => setActiveTab(index)} onKeyDown={(event) => { if (event.key === 'ArrowRight' || event.key === 'ArrowDown') { event.preventDefault(); moveTab(1); } if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') { event.preventDefault(); moveTab(-1); } }}>{label}</button>)}
     </div>
     <div className="drawer-panel" id="drawer-tabpanel" role="tabpanel" aria-labelledby={`drawer-tab-${activeTab}`}>
-      {activeTab === 0 && <><section className="drawer-section"><h3>历史解读</h3><p className="summary">{node.summary}</p></section><section className="drawer-section"><h3>代表作</h3><div className="tag-list">{node.works.map((work) => <span className="info-tag" key={work}>{work}</span>)}</div></section><section className="drawer-section"><h3>音色与特征</h3><div className="tag-list">{[...node.instruments, ...node.traits].map((item) => <span className="info-tag" key={item}>{item}</span>)}</div></section></>}
+      {activeTab === 0 && <><section className="drawer-section"><h3>历史解读</h3><p className="summary">{node.summary}</p></section><section className="drawer-section"><h3>曲目导赏</h3><RepertoireList node={node} /></section><section className="drawer-section"><h3>音色与特征</h3><div className="tag-list">{[...node.instruments, ...node.traits].map((item) => <span className="info-tag" key={item}>{item}</span>)}</div></section></>}
       {activeTab === 1 && <><section className="drawer-section"><h3>代表音乐家</h3>{node.musicians.map((musician) => <div className="musician" key={musician.name}><strong>{musician.name}</strong><span>{musician.nameEn} · {musician.lifespan}</span><small>{musician.knownFor}</small></div>)}</section><section className="drawer-section"><h3>人物典故</h3><p className="summary">{node.story}</p></section></>}
-      {activeTab === 2 && <><section className="drawer-section"><h3>礼乐制度 / 规范</h3><p className="drawer-fact">{node.institution}</p></section><section className="drawer-section"><h3>传世典籍</h3><div className="tag-list">{node.treatises.map((treatise) => <span className="info-tag" key={treatise}>{treatise}</span>)}</div></section></>}
+      {activeTab === 2 && <><section className="drawer-section"><h3>礼乐制度 / 规范</h3><p className="drawer-fact">{node.institution}</p></section><section className="drawer-section"><h3>传世典籍</h3><div className="tag-list">{node.treatises.map((treatise) => <span className="info-tag" key={treatise}>{treatise}</span>)}</div></section><NotationDecoder node={node} /></>}
       {activeTab === 3 && <><section className="drawer-section"><h3>考古文物 / 历史载体</h3><p className="drawer-fact">{node.artifact}</p><button type="button" className="museum-link" onClick={(event) => openArtifact(event.currentTarget)}>查看博物馆文物实拍图</button></section><section className="drawer-section"><h3>律制与声学体系</h3><p className="drawer-fact">{node.tuningSystem}</p></section><section className="drawer-section"><h3>五维声学画像</h3><div className="radar-bars">{RADAR_AXES.map((axis) => <div className="radar-bar" key={axis.key}><span>{axis.label}</span><i><b style={{ width: `${node.radar[axis.key]}%` }} /></i><em>{node.radar[axis.key]}</em></div>)}</div></section></>}
     </div>
     <div className="drawer-footer"><Lineage node={node} selectNode={selectNode} /><div className="drawer-actions"><button type="button" className="compare-add" disabled={compare.includes(node.id)} onClick={() => addToCompare(node.id)}>{compare.includes(node.id) ? '已加入对比' : '+ 加入对比'}</button><a href={spotify} target="_blank" rel="noopener noreferrer">Spotify</a><a href={youtube} target="_blank" rel="noopener noreferrer">YouTube</a></div></div>
@@ -65,7 +67,7 @@ function DrawerContent({ node, compare, selectNode, addToCompare }: { node: Reso
 }
 
 export default function NodeDrawer() {
-  const { selectedId, compare, compareOpen, selectNode, setCompareOpen, addToCompare } = useAtlasStore();
+  const { selectedId, compare, compareOpen, odyssey, selectNode, setCompareOpen, addToCompare } = useAtlasStore();
   const node = selectedId ? NODE_BY_ID.get(selectedId) : undefined;
   const drawerRef = useRef<HTMLElement>(null);
   useEffect(() => () => audioEngine.stop(), [selectedId]);
@@ -73,5 +75,5 @@ export default function NodeDrawer() {
   useEffect(() => { drawerRef.current?.scrollTo({ top: 0 }); }, [selectedId]);
   useEffect(() => { const onKey = (event: KeyboardEvent) => { if (event.key !== 'Escape') return; if (compareOpen) setCompareOpen(false); else selectNode(null); }; document.addEventListener('keydown', onKey); return () => document.removeEventListener('keydown', onKey); }, [compareOpen, selectNode, setCompareOpen]);
   if (!node) return null;
-  return <aside ref={drawerRef} className="node-drawer" aria-label={`${node.name}档案`}><div className="drawer-handle" aria-hidden="true" /><DrawerContent key={node.id} node={node} compare={compare} selectNode={(id, opts) => selectNode(id, opts)} addToCompare={addToCompare} /></aside>;
+  return <aside ref={drawerRef} className={`node-drawer${odyssey ? ' is-odyssey-active' : ''}`} aria-label={`${node.name}档案`}><div className="drawer-handle" aria-hidden="true" /><DrawerContent key={node.id} node={node} compare={compare} selectNode={(id, opts) => selectNode(id, opts)} addToCompare={addToCompare} /></aside>;
 }

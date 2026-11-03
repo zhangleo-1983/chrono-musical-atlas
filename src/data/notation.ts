@@ -1,0 +1,96 @@
+import type { NotationSpec } from '../domain/types';
+
+export type NodeNotation = NotationSpec | string;
+
+export const NOTATION_BY_NODE: Record<string, NodeNotation> = {
+  'vedic-chant': {
+    system: '《娑摩吠陀》音高标记与数字记号', eraNote: '三种重音为相对高低；娑摩吠陀歌本用数字 1、2、3 标示由高到低的音级，书面标记晚于口传传统。', source: '吠陀重音体系（udātta / anudātta / svarita）与娑摩吠陀歌本数字标记', basis: 'theory-system', referenceKey: '以数字 1 为 E4 的相对示意',
+    glyphs: [
+      { symbol: 'udātta', modern: '高（重读）', meaning: '“升高的”重音，标示音节的相对高位。', midi: 64 },
+      { symbol: 'anudātta', modern: '低（非重读）', meaning: '“未升高的”重音，标示相对低位。', midi: 60 },
+      { symbol: 'svarita', modern: '由高下滑', meaning: '“发声的”重音，由高处滑向低处；这里用两个音同时发声来示意。', midi: [64, 60] },
+      { symbol: '1', modern: '第一音级（最高）', meaning: '娑摩吠陀歌本中的数字记号，从 1 开始向下递降。', midi: 64 },
+      { symbol: '2', modern: '第二音级', meaning: '比 1 低一级。', midi: 62 },
+      { symbol: '3', modern: '第三音级', meaning: '比 2 再低一级。', midi: 60 },
+    ],
+  },
+  'sumer-lyre': '尼普尔泥板 CBS 10996（古巴比伦时期，晚于乌尔王陵）记录了九弦里拉琴的弦名与调弦音程名，属于乐律理论，不是乐谱，具体音高的复原尚无定论。',
+  'hurrian-hymn': 'H.6 泥板用胡里安语歌词加阿卡德语音程名与数字记写，是现存最早的较完整乐谱之一；但各家复原差异很大，本站不提供符号级的音高换算。',
+  'hebrew-temple': {
+    system: '羊角号（shofar）四种吹法', eraNote: '四种吹法名称见于后世拉比文献，圣殿时期的具体吹法无法直接复原；羊角号只能吹出少数几个自然泛音。', source: '犹太礼仪中的羊角号吹法传统（《米示拿》等后世文献记载）', basis: 'later-system', referenceKey: '以 C4 为羊角号基音的示意',
+    glyphs: [
+      { symbol: 'Tekiah', modern: '一声长音', meaning: '一口气吹出的连续长音。', midi: 60 },
+      { symbol: 'Shevarim', modern: '三段中音', meaning: '三段较短的“折断”吹奏。', midi: 60 },
+      { symbol: 'Teruah', modern: '九个急促短音', meaning: '一连串急促短音，此处用较高的泛音示意。', midi: 67 },
+      { symbol: 'Tekiah Gedolah', modern: '最后的大长音', meaning: '仪式结尾尽量延长的长音，这里用基音与五度泛音同时发声来示意。', midi: [60, 67] },
+    ],
+  },
+  'zhou-ritual': {
+    system: '古琴正调七弦定弦', eraNote: '七弦古琴与正调定弦在汉代以后定型，减字谱中的数字即弦序；不能倒推为周代原貌。', source: '古琴正调（又称宫调定弦）', basis: 'later-system', referenceKey: '以三弦为宫（F）、一弦为 C2 的通行示意',
+    glyphs: [
+      { symbol: '一弦', modern: '徵（C）', meaning: '正调一弦为徵音，最粗最低。', midi: 36 },
+      { symbol: '二弦', modern: '羽（D）', meaning: '比一弦高大二度。', midi: 38 },
+      { symbol: '三弦', modern: '宫（F）', meaning: '正调以三弦为宫。', midi: 41 },
+      { symbol: '四弦', modern: '商（G）', meaning: '比三弦高大二度。', midi: 43 },
+      { symbol: '五弦', modern: '角（A）', meaning: '比四弦高大二度。', midi: 45 },
+      { symbol: '六弦', modern: '徵（c）', meaning: '一弦的高八度。', midi: 48 },
+    ],
+  },
+  'zenghouyi-bells': {
+    system: '编钟铭文律名与阶名', eraNote: '以出土钟铭中可确定的“某律之宫/商”等格式作保守展示。曾侯乙钟铭以律名加阶名标注各钟的发音，如“某律之宫”。', source: '曾侯乙编钟铭文释读与战国律制研究', basis: 'surviving-score', referenceKey: '以 C4 为宫的相对五声换算',
+    glyphs: [
+      { symbol: '宫', modern: '宫', meaning: '铭文阶名格式中的中心音级；以 C4 作现代示意基准。', midi: 60 },
+      { symbol: '商', modern: '商', meaning: '五声阶名之一；现代音高按参考宫作相对换算。', midi: 62 },
+      { symbol: '角', modern: '角', meaning: '五声阶名之一；不把示意音高当作所有钟的实测值。', midi: 64 },
+      { symbol: '徵', modern: '徵', meaning: '五声阶名之一；实际钟律需结合具体钟铭与测音。', midi: 67 },
+      { symbol: '羽', modern: '羽', meaning: '五声阶名之一；此处只呈现相对阶级关系。', midi: 69 },
+    ],
+  },
+  'greek-modes': '古希腊用字母记谱（阿利皮乌斯表），塞基洛斯墓志铭（约公元 1 世纪）同时记有音高字母与时值记号；本站暂不提供符号换算。',
+  'persian-silkroad': '《隋书·音乐志》记苏祗婆传“五旦七调”，是调名体系；敦煌琵琶谱（约 10 世纪）用谱字记录指位，晚于本节点，本站不提供换算。',
+  'han-wei-yuefu': {
+    system: '《碣石调·幽兰》文字谱中的徽位泛音', eraNote: '现存文字谱为唐代抄本，用文字描述指法与徽位，不能当作汉魏原谱；以下为一弦上各徽泛音的物理音高。', source: '《碣石调·幽兰》唐抄本文字谱；古琴徽位的弦长分割比例', basis: 'surviving-score', referenceKey: '一弦散音为 C2',
+    glyphs: [
+      { symbol: '散音', modern: '一弦空弦（C2）', meaning: '不按弦直接弹出的音。', midi: 36 },
+      { symbol: '七徽泛', modern: '高八度', meaning: '七徽在弦长 1/2 处，泛音为高八度。', midi: 48 },
+      { symbol: '九徽泛', modern: '高八度加五度', meaning: '九徽在弦长 1/3 处，泛音为第 3 分音。', midi: 55 },
+      { symbol: '十徽泛', modern: '高两个八度', meaning: '十徽在弦长 1/4 处，泛音为第 4 分音。', midi: 60 },
+      { symbol: '八徽泛', modern: '高两个八度加大三度', meaning: '八徽在弦长 2/5 处，泛音为第 5 分音。', midi: 64 },
+    ],
+  },
+  'roman-hydraulis': {
+    system: '波爱修斯拉丁字母音名 A—P', eraNote: '波爱修斯约 6 世纪初记述的理论体系晚于罗马水力管风琴主体年代。', source: '波爱修斯《音乐体制》与古典管风琴研究', basis: 'theory-system', referenceKey: '以字母 A 为 C4 的示意（原体系 A 为最低音）',
+    glyphs: [
+      { symbol: 'A', modern: '起点', meaning: '波爱修斯以字母 A 标示音列最低音。', midi: 60 },
+      { symbol: 'D', modern: '纯四度', meaning: 'A 上方第四个字母，与 A 相距纯四度。', midi: 65 },
+      { symbol: 'E', modern: '纯五度', meaning: '与 A 相距纯五度。', midi: 67 },
+      { symbol: 'G', modern: '小七度', meaning: '与 A 相距小七度。', midi: 70 },
+      { symbol: 'H', modern: '八度', meaning: '第八个字母，回到 A 的高八度。', midi: 72 },
+      { symbol: 'L', modern: '八度加纯四度', meaning: '该体系不用字母 J，L 为 A 上方第 11 级，即高八度上的 D。', midi: 77 },
+    ],
+  },
+  'jiahu-flute': '贾湖出土骨笛提供器物、孔位和测音线索，但没有留下可解读的连续记谱。',
+  'egypt-temple': '古埃及保存了壁画、器物与礼仪图像，未留下可直接解读的神庙旋律记谱。',
+  'andean-chavin': '查文的骨笛、海螺号与建筑声学可供研究，但没有可解读的仪式记谱。',
+  'maya-ritual': '玛雅壁画与陶笛保存乐队和器物图像，未留下可解读的古典期旋律记谱。',
+  'gagaku': '雅乐使用后世谱本与口传体系，未在本轮建立远古破译台。',
+  'baghdad-maqam': '木卡姆以口传、调式和即兴为主，现有材料不足以建立本轮远古破译台。',
+  'gregorian-chant': '圣咏有中世纪纽姆谱与后世五线谱传统，本轮不把它们简化成远古破译符号。',
+  'griot-mali': '格里奥传统以口传、器乐师徒和表演场景为核心，本轮不建立固定谱符解读。',
+  'hindustani': '印度斯坦音乐有后世记谱和口传并行的体系，本轮只深耕远古记谱材料。',
+  'leipzig-baroque': '巴洛克作品以现代乐谱和手稿保存，本轮古谱台聚焦远古与早期体系。',
+  'gamelan': '加美兰常以数字谱、口传和乐团本地谱本传承，本轮不将其改写成古代符号。',
+  'vienna-classical': '维也纳古典主义有成熟五线谱与手稿传统，本轮不把现代谱本称为古谱破译。',
+  'peking-opera': '京剧以工尺谱、板式和口传并行，本轮不在古谱台中替它虚构远古符号。',
+  'russian-national': '俄罗斯民族乐派以五线谱、手稿和录音保存，本轮不建立远古符号解码。',
+  'paris-impressionism': '印象主义作品以现代总谱和手稿保存，本轮古谱台不扩展至近现代记谱。',
+  'delta-blues': '三角洲蓝调主要由录音、歌词和口传保存，现代作品不在本轮古谱台范围内。',
+  'new-orleans-jazz': '新奥尔良爵士依靠录音、编曲谱与现场传统保存，本轮不生成远古谱符。',
+  'chicago-blues': '芝加哥蓝调以录音、乐队谱和口传保存，现代曲目不进入古谱破译台。',
+  'rio-bossa': '波萨诺瓦以录音、歌曲谱本和演奏传统保存，本轮不扩展古谱解读。',
+  'london-rock': '英伦摇滚以现代总谱、录音室母带和和弦谱保存，本轮不建立古谱台。',
+  'lagos-afrobeat': 'Afrobeat 主要由录音、乐队编曲和口传保存，本轮不把现代编曲伪装成古谱。',
+  'bronx-hiphop': '嘻哈以录音、采样记录和现场传统保存，本轮不建立固定古谱解码。',
+  'tokyo-electro': '电子流行以录音工程文件、谱本和合成器编程保存，不属于本轮远古破译范围。',
+  'detroit-techno': 'Techno 以录音、鼓机编程和现场混音保存，本轮不将其改写为古代记谱。',
+};

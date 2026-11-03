@@ -1,6 +1,8 @@
 import type { MusicNode, Musician } from '../domain/types';
+import { REPERTOIRE_BY_NODE } from './repertoire';
+import { NOTATION_BY_NODE } from './notation';
 
-type BaseMusicNode = Omit<MusicNode, 'institution' | 'treatises' | 'story' | 'figure'>;
+type BaseMusicNode = Omit<MusicNode, 'institution' | 'treatises' | 'story' | 'figure' | 'repertoire'>;
 
 const BASE_NODES: BaseMusicNode[] = [
   { id: 'vedic-chant', name: '吠陀吟诵', nameEn: 'Vedic Chant', startYear: -1500, endYear: -500, city: '瓦拉纳西', region: '北印度', continent: 'asia', lat: 25.3, lon: 83, genre: 'ritual', influence: 4, musicians: [{ name: '吠陀祭司传统', nameEn: 'Vedic priestly tradition', lifespan: '公元前1500年起', knownFor: '口传吠陀经文与音调' }], works: ['梨俱吠陀', '娑摩吠陀'], instruments: ['人声', '祭仪钟'], traits: ['三音调式', '自由吟诵'], artifact: '祭司口传的吠陀吟诵传统与经文记忆', tuningSystem: '后世《舞论》系统阐述的二十二 Śruti 理论', searchQuery: 'Vedic chant music', summary: '吠陀吟诵以严格口传保存经文和音高，是南亚最早的音乐记忆系统之一。它把呼吸、语义与仪式动作编织为连续声线，影响了印度古典音乐的调式观念；后世《舞论》才系统阐述二十二 Śruti。其核心价值在于以听觉记忆延续文本秩序。', radar: { rhythm: 44, harmony: 20, improvisation: 58, ensemble: 30, fusion: 18 }, patch: 'modal-drone', influencedBy: [] },
@@ -98,9 +100,13 @@ const ANCIENT_SECOND_MUSICIANS: Record<string, Musician> = {
 export const RAW_NODES: MusicNode[] = BASE_NODES.map((node) => {
   const archiveData = ARCHIVE_DATA[node.id];
   if (!archiveData) throw new Error(`Missing archive data for ${node.id}`);
+  const notationEntry = NOTATION_BY_NODE[node.id];
+  const notationFields = typeof notationEntry === 'string' ? { notationAbsentNote: notationEntry } : notationEntry ? { notation: notationEntry } : {};
   return {
     ...node,
     ...archiveData,
+    repertoire: REPERTOIRE_BY_NODE[node.id] ?? [],
+    ...notationFields,
     musicians: ANCIENT_SECOND_MUSICIANS[node.id] ? [...node.musicians, ANCIENT_SECOND_MUSICIANS[node.id]!] : node.musicians,
   };
 });
