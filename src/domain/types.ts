@@ -8,7 +8,18 @@ export interface MotifEvent { step: number; midi: number | number[]; durSteps: n
 export interface Motif { bpm: number; stepsPerBeat: number; voice: Voice; wet: number; events: MotifEvent[] }
 
 export interface Radar { rhythm: number; harmony: number; improvisation: number; ensemble: number; fusion: number }
-export interface Musician { name: string; nameEn: string; lifespan: string; knownFor: string }
+export interface Musician { name: string; nameEn: string; lifespan: string; knownFor: string; bio: string; legacy: string }
+export type TreatiseKind = 'canonical-text' | 'inscription-artifact' | 'oral-tradition' | 'modern-record';
+export interface TreatiseItem {
+  id: string;
+  title: string;
+  authorEra: string;
+  kind: TreatiseKind;
+  digest: string;
+  excerpt?: string;
+  excerptSource?: string;
+  keyPoint?: string;
+}
 export interface ArtifactImage { file: string; src: string; page: string; license: string; credit: string; caption: string }
 export interface WorkItem {
   id: string; title: string; subtitle: string; guide: string; searchQuery: string;
@@ -25,7 +36,7 @@ export interface MusicNode {
   influence: 1 | 2 | 3 | 4 | 5; musicians: Musician[]; works: string[]; instruments: string[];
   traits: string[]; summary: string; artifact: string; tuningSystem: string; institution: string; treatises: string[]; story: string;
   searchQuery?: string; figure?: FigureId; radar: Radar; patch: PatchId; influencedBy: string[];
-  repertoire: WorkItem[]; notation?: NotationSpec; notationAbsentNote?: string;
+  repertoire: WorkItem[]; notation?: NotationSpec; notationAbsentNote?: string; treatiseList: TreatiseItem[];
 }
 export interface ResolvedNode extends MusicNode { era: EraId; influences: string[] }
 export interface ComparePreset { id: string; label: string; a: string; b: string }

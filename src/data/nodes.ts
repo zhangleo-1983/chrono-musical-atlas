@@ -1,8 +1,11 @@
 import type { MusicNode, Musician } from '../domain/types';
 import { REPERTOIRE_BY_NODE } from './repertoire';
 import { NOTATION_BY_NODE } from './notation';
+import { MUSICIAN_DETAILS } from './people';
+import { TREATISES_BY_NODE } from './treatises';
 
-type BaseMusicNode = Omit<MusicNode, 'institution' | 'treatises' | 'story' | 'figure' | 'repertoire'>;
+type BaseMusician = Omit<Musician, 'bio' | 'legacy'>;
+type BaseMusicNode = Omit<MusicNode, 'institution' | 'treatises' | 'story' | 'figure' | 'repertoire' | 'treatiseList' | 'musicians'> & { musicians: BaseMusician[] };
 
 const BASE_NODES: BaseMusicNode[] = [
   { id: 'vedic-chant', name: '吠陀吟诵', nameEn: 'Vedic Chant', startYear: -1500, endYear: -500, city: '瓦拉纳西', region: '北印度', continent: 'asia', lat: 25.3, lon: 83, genre: 'ritual', influence: 4, musicians: [{ name: '吠陀祭司传统', nameEn: 'Vedic priestly tradition', lifespan: '公元前1500年起', knownFor: '口传吠陀经文与音调' }], works: ['梨俱吠陀', '娑摩吠陀'], instruments: ['人声', '祭仪钟'], traits: ['三音调式', '自由吟诵'], artifact: '祭司口传的吠陀吟诵传统与经文记忆', tuningSystem: '后世《舞论》系统阐述的二十二 Śruti 理论', searchQuery: 'Vedic chant music', summary: '吠陀吟诵以严格口传保存经文和音高，是南亚最早的音乐记忆系统之一。它把呼吸、语义与仪式动作编织为连续声线，影响了印度古典音乐的调式观念；后世《舞论》才系统阐述二十二 Śruti。其核心价值在于以听觉记忆延续文本秩序。', radar: { rhythm: 44, harmony: 20, improvisation: 58, ensemble: 30, fusion: 18 }, patch: 'modal-drone', influencedBy: [] },
@@ -80,7 +83,7 @@ const ARCHIVE_DATA: Record<string, ArchiveData> = {
   'maya-ritual': { institution: '玛雅城邦宫廷、祭祀与乐师群体', treatises: ['《德累斯顿抄本》研究', '博南帕克壁画乐队研究'], story: '博南帕克壁画约作于公元790年前后，描绘鼓手、号角手与仪式队列，显示玛雅宫廷乐队在视觉与政治秩序中的位置。后世抄本材料可补充神话语境，但年代和地区不同，不能直接当作古典期每座城邦的制度记录。' },
 };
 
-const ANCIENT_SECOND_MUSICIANS: Record<string, Musician> = {
+const ANCIENT_SECOND_MUSICIANS: Record<string, BaseMusician> = {
   'vedic-chant': { name: '娑摩吠陀传诵者群像', nameEn: 'Sama Veda chanters', lifespan: '约公元前1500年起', knownFor: '以口传保存经文重音与旋律轮廓' },
   'zhou-ritual': { name: '孔子', nameEn: 'Confucius', lifespan: '约公元前551—前479年', knownFor: '礼乐思想与古代文献传统' },
   'greek-modes': { name: '亚里士多德', nameEn: 'Aristotle', lifespan: '公元前384—前322年', knownFor: '在哲学著作中讨论音乐教育与伦理' },
@@ -100,14 +103,25 @@ const ANCIENT_SECOND_MUSICIANS: Record<string, Musician> = {
 export const RAW_NODES: MusicNode[] = BASE_NODES.map((node) => {
   const archiveData = ARCHIVE_DATA[node.id];
   if (!archiveData) throw new Error(`Missing archive data for ${node.id}`);
+  const musicianDetails = MUSICIAN_DETAILS[node.id];
+  if (!musicianDetails) throw new Error(`Missing musician details for ${node.id}`);
+  const musicians = ANCIENT_SECOND_MUSICIANS[node.id] ? [...node.musicians, ANCIENT_SECOND_MUSICIANS[node.id]!] : node.musicians;
+  const enrichedMusicians = musicians.map((musician) => {
+    const detail = musicianDetails[musician.name];
+    if (!detail) throw new Error(`Missing musician detail for ${node.id}/${musician.name}`);
+    return { ...musician, ...detail };
+  });
+  const treatiseList = TREATISES_BY_NODE[node.id];
+  if (!treatiseList) throw new Error(`Missing treatise list for ${node.id}`);
   const notationEntry = NOTATION_BY_NODE[node.id];
   const notationFields = typeof notationEntry === 'string' ? { notationAbsentNote: notationEntry } : notationEntry ? { notation: notationEntry } : {};
   return {
     ...node,
     ...archiveData,
     repertoire: REPERTOIRE_BY_NODE[node.id] ?? [],
+    treatiseList,
     ...notationFields,
-    musicians: ANCIENT_SECOND_MUSICIANS[node.id] ? [...node.musicians, ANCIENT_SECOND_MUSICIANS[node.id]!] : node.musicians,
+    musicians: enrichedMusicians,
   };
 });
 

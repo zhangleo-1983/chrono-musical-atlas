@@ -5,12 +5,15 @@ let createdConvolvers = 0;
 let createdImpulseBuffers = 0;
 let createdOscillators = 0;
 let createdBufferSources = 0;
+let createdOscillatorNodes: FakeOscillator[] = [];
+let createdFilters: FakeFilter[] = [];
 type FakeParam = { value: number; setValueAtTime: ReturnType<typeof vi.fn>; exponentialRampToValueAtTime: ReturnType<typeof vi.fn>; linearRampToValueAtTime: ReturnType<typeof vi.fn>; cancelScheduledValues: ReturnType<typeof vi.fn> };
 let createdGainValues: FakeParam[] = [];
 let oscillatorStopTimes: number[] = [];
 
 class FakeAudioNode {
-  connect(target: FakeAudioNode) { return target; }
+  connections: unknown[] = [];
+  connect(target: unknown) { this.connections.push(target); return target; }
   disconnect() {}
 }
 class FakeGain extends FakeAudioNode {
@@ -20,13 +23,13 @@ class FakeGain extends FakeAudioNode {
 class FakeOscillator extends FakeAudioNode { frequency = { value: 440, setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() }; detune = { value: 0, setValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn() }; type: OscillatorType = 'sine'; onended: (() => void) | null = null; start() {} stop(when?: number) { if (when !== undefined) oscillatorStopTimes.push(when); } }
 class FakeBufferSource extends FakeAudioNode { buffer: AudioBuffer | null = null; onended: (() => void) | null = null; start() {} stop() {} }
 class FakeConvolver extends FakeAudioNode { buffer: AudioBuffer | null = null; }
-class FakeFilter extends FakeAudioNode { type: BiquadFilterType = 'lowpass'; frequency = { value: 1000, setValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn() }; Q = { value: 0.7 }; }
+class FakeFilter extends FakeAudioNode { type: BiquadFilterType = 'lowpass'; frequency = { value: 1000, setValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() }; Q = { value: 0.7 }; }
 class FakeAnalyser extends FakeAudioNode { fftSize = 128; smoothingTimeConstant = 0; get frequencyBinCount() { return 64; } getByteFrequencyData() {} }
 class FakeContext {
   currentTime = 0; sampleRate = 44100; destination = new FakeAudioNode(); state = 'running';
   async resume() {}
   createGain() { return new FakeGain(); } createDynamicsCompressor() { return Object.assign(new FakeAudioNode(), { threshold: { value: 0 }, knee: { value: 0 }, ratio: { value: 0 } }); }
-  createAnalyser() { return new FakeAnalyser(); } createOscillator() { createdOscillators += 1; return new FakeOscillator(); } createBiquadFilter() { return new FakeFilter(); } createBufferSource() { createdBufferSources += 1; return new FakeBufferSource(); } createConvolver() { createdConvolvers += 1; return new FakeConvolver(); }
+  createAnalyser() { return new FakeAnalyser(); } createOscillator() { createdOscillators += 1; const oscillator = new FakeOscillator(); createdOscillatorNodes.push(oscillator); return oscillator; } createBiquadFilter() { const filter = new FakeFilter(); createdFilters.push(filter); return filter; } createBufferSource() { createdBufferSources += 1; return new FakeBufferSource(); } createConvolver() { createdConvolvers += 1; return new FakeConvolver(); }
   createBuffer(channels: number, length: number) { if (channels === 2) createdImpulseBuffers += 1; return { sampleRate: this.sampleRate, getChannelData: () => new Float32Array(length) } as unknown as AudioBuffer; }
   createWaveShaper() { return Object.assign(new FakeAudioNode(), { curve: null as Float32Array | null, oversample: 'none' as OverSampleType }); }
 }
@@ -34,7 +37,7 @@ const FakeContextWithoutConvolver = class extends FakeContext {};
 Object.defineProperty(FakeContextWithoutConvolver.prototype, 'createConvolver', { configurable: true, value: undefined });
 
 describe('audio engine state snapshots', () => {
-  beforeEach(() => { vi.resetModules(); createdConvolvers = 0; createdImpulseBuffers = 0; createdOscillators = 0; createdBufferSources = 0; createdGainValues = []; oscillatorStopTimes = []; Object.defineProperty(window, 'AudioContext', { configurable: true, value: FakeContext }); });
+  beforeEach(() => { vi.resetModules(); createdConvolvers = 0; createdImpulseBuffers = 0; createdOscillators = 0; createdBufferSources = 0; createdOscillatorNodes = []; createdFilters = []; createdGainValues = []; oscillatorStopTimes = []; Object.defineProperty(window, 'AudioContext', { configurable: true, value: FakeContext }); });
   it('replaces the external snapshot across play, stop, and mute', async () => {
     const { audioEngine, eventTime } = await import('./engine');
     const initial = audioEngine.getState();
@@ -85,8 +88,34 @@ describe('audio engine state snapshots', () => {
     const { audioEngine } = await import('./engine');
     await audioEngine.playMotif('motif', { bpm: 600, stepsPerBeat: 1, voice: 'pluck', wet: 0, events: [{ step: 0, midi: 60, durSteps: 0.1 }] });
     expect(audioEngine.getState().playingKey).toBe('motif');
-    vi.advanceTimersByTime(250);
+    vi.advanceTimersByTime(2600);
     expect(audioEngine.getState().playingKey).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('builds a layered pluck with a lowpass sweep and depth-routed vibrato', async () => {
+    const { audioEngine } = await import('./engine');
+    await audioEngine.playMotif('pluck-layered', { bpm: 60, stepsPerBeat: 1, voice: 'pluck', wet: 0, events: [{ step: 0, midi: 60, durSteps: 1, vel: 0.68 }] });
+    expect(createdOscillators).toBeGreaterThanOrEqual(6);
+    const lowpass = createdFilters.find((filter) => filter.type === 'lowpass' && filter.frequency.setValueAtTime.mock.calls.length > 0);
+    expect(lowpass).toBeDefined();
+    expect(lowpass!.frequency.setValueAtTime).toHaveBeenCalledWith(2600 + 0.68 * 1400, 0.05);
+    expect(lowpass!.frequency.exponentialRampToValueAtTime).toHaveBeenCalledWith(950 + 0.68 * 400, 0.27);
+    const lfo = createdOscillatorNodes.find((oscillator) => oscillator.frequency.value === 4.6);
+    expect(lfo?.connections.some((target) => target instanceof FakeGain)).toBe(true);
+    expect(lfo?.connections.some((target) => target && typeof target === 'object' && 'value' in target && 'setValueAtTime' in target)).toBe(false);
+    audioEngine.stop();
+  });
+
+  it('keeps a pluck motif alive through its full tail', async () => {
+    vi.useFakeTimers();
+    const { audioEngine } = await import('./engine');
+    await audioEngine.playMotif('pluck-tail', { bpm: 60, stepsPerBeat: 1, voice: 'pluck', wet: 0, events: [{ step: 0, midi: 60, durSteps: 0.3 }] });
+    vi.advanceTimersByTime(300);
+    expect(audioEngine.getState().playingKey).toBe('pluck-tail');
+    vi.advanceTimersByTime(2700);
+    expect(audioEngine.getState().playingKey).toBeNull();
+    audioEngine.stop();
     vi.useRealTimers();
   });
 

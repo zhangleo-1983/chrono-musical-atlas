@@ -13,6 +13,8 @@ import { RADAR_AXES } from './radar';
 import SoundPlayer from './SoundPlayer';
 import RepertoireList from './RepertoireList';
 import NotationDecoder from './NotationDecoder';
+import MusicianList from './MusicianList';
+import TreatiseList from './TreatiseList';
 import './hud.css';
 
 const TABS = ['🎵 概览名曲', '👤 人物典故', '🏛️ 制度典籍', '📐 器物律制'] as const;
@@ -57,8 +59,8 @@ function DrawerContent({ node, compare, selectNode, addToCompare }: { node: Reso
     </div>
     <div className="drawer-panel" id="drawer-tabpanel" role="tabpanel" aria-labelledby={`drawer-tab-${activeTab}`}>
       {activeTab === 0 && <><section className="drawer-section"><h3>历史解读</h3><p className="summary">{node.summary}</p></section><section className="drawer-section"><h3>曲目导赏</h3><RepertoireList node={node} /></section><section className="drawer-section"><h3>音色与特征</h3><div className="tag-list">{[...node.instruments, ...node.traits].map((item) => <span className="info-tag" key={item}>{item}</span>)}</div></section></>}
-      {activeTab === 1 && <><section className="drawer-section"><h3>代表音乐家</h3>{node.musicians.map((musician) => <div className="musician" key={musician.name}><strong>{musician.name}</strong><span>{musician.nameEn} · {musician.lifespan}</span><small>{musician.knownFor}</small></div>)}</section><section className="drawer-section"><h3>人物典故</h3><p className="summary">{node.story}</p></section></>}
-      {activeTab === 2 && <><section className="drawer-section"><h3>礼乐制度 / 规范</h3><p className="drawer-fact">{node.institution}</p></section><section className="drawer-section"><h3>传世典籍</h3><div className="tag-list">{node.treatises.map((treatise) => <span className="info-tag" key={treatise}>{treatise}</span>)}</div></section><NotationDecoder node={node} /></>}
+      {activeTab === 1 && <><section className="drawer-section"><h3>代表音乐家</h3><MusicianList node={node} /></section><section className="drawer-section"><h3>人物典故</h3><p className="summary">{node.story}</p></section></>}
+      {activeTab === 2 && <><section className="drawer-section"><h3>礼乐制度 / 规范</h3><p className="drawer-fact">{node.institution}</p></section><section className="drawer-section"><h3>传世典籍</h3><TreatiseList node={node} /></section><NotationDecoder node={node} /></>}
       {activeTab === 3 && <><section className="drawer-section"><h3>考古文物 / 历史载体</h3><p className="drawer-fact">{node.artifact}</p><button type="button" className="museum-link" onClick={(event) => openArtifact(event.currentTarget)}>查看博物馆文物实拍图</button></section><section className="drawer-section"><h3>律制与声学体系</h3><p className="drawer-fact">{node.tuningSystem}</p></section><section className="drawer-section"><h3>五维声学画像</h3><div className="radar-bars">{RADAR_AXES.map((axis) => <div className="radar-bar" key={axis.key}><span>{axis.label}</span><i><b style={{ width: `${node.radar[axis.key]}%` }} /></i><em>{node.radar[axis.key]}</em></div>)}</div></section></>}
     </div>
     <div className="drawer-footer"><Lineage node={node} selectNode={selectNode} /><div className="drawer-actions"><button type="button" className="compare-add" disabled={compare.includes(node.id)} onClick={() => addToCompare(node.id)}>{compare.includes(node.id) ? '已加入对比' : '+ 加入对比'}</button><a href={spotify} target="_blank" rel="noopener noreferrer">Spotify</a><a href={youtube} target="_blank" rel="noopener noreferrer">YouTube</a></div></div>

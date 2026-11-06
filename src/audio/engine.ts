@@ -11,6 +11,7 @@ const VOICE_TAIL: Partial<Record<Voice, number>> = {
   strings: 0.25,
   lyre: 1.2,
   bronzeBell: 2.5,
+  pluck: 2.4,
 };
 
 const listeners = new Set<() => void>();
@@ -229,6 +230,36 @@ function scheduleStrings(ctx: AudioContext, parent: GainNode, event: NoteEvent, 
   lfo.start(when + 0.25); lfo.stop(releaseEnd + 0.03); lfo.onended = () => { lfo.disconnect(); oscillators.forEach((osc) => depth.disconnect(osc.detune)); depth.disconnect(); };
 }
 
+function schedulePluck(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number): void {
+  if (event.midi === undefined || Array.isArray(event.midi)) return;
+  const frequency = midiFrequency(event.midi);
+  const decay = Math.min(2.4, Math.max(0.9, 2.1 - (event.midi - 48) * 0.025));
+  const lowpass = ctx.createBiquadFilter(); lowpass.type = 'lowpass';
+  lowpass.frequency.setValueAtTime(2600 + event.vel * 1400, when);
+  lowpass.frequency.exponentialRampToValueAtTime(950 + event.vel * 400, when + 0.22);
+  lowpass.connect(parent);
+  const oscillators: OscillatorNode[] = [];
+  const partials: Array<{ multiple: number; type: OscillatorType; peak: number }> = [
+    { multiple: 1, type: 'sine', peak: 0.08 },
+    { multiple: 1, type: 'triangle', peak: 0.06 },
+    { multiple: 2, type: 'triangle', peak: 0.035 },
+    { multiple: 3, type: 'triangle', peak: 0.02 },
+    { multiple: 4, type: 'triangle', peak: 0.01 },
+  ];
+  partials.forEach(({ multiple, type, peak }) => {
+    const osc = ctx.createOscillator(); osc.type = type; osc.frequency.value = frequency * multiple;
+    const gain = ctx.createGain(); gain.connect(lowpass); osc.connect(gain); oscillators.push(osc);
+    const end = when + decay / multiple;
+    envelope(gain, when, 0.003, end - when, peak * event.vel);
+    osc.start(when); osc.stop(end + 0.05);
+    osc.onended = () => { osc.disconnect(); gain.disconnect(); };
+  });
+  const depth = ctx.createGain(); depth.gain.setValueAtTime(0, when); depth.gain.linearRampToValueAtTime(6, when + 0.14);
+  const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 4.6; lfo.connect(depth); oscillators.forEach((osc) => depth.connect(osc.detune));
+  lfo.start(when); lfo.stop(when + decay + 0.05); lfo.onended = () => { lfo.disconnect(); oscillators.forEach((osc) => depth.disconnect(osc.detune)); depth.disconnect(); };
+  scheduleNoise(ctx, parent, event, when, 0, false, 0.008);
+}
+
 function scheduleVoice(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number, stepSeconds: number, voice: Voice): void {
   const end = when + Math.max(0.06, event.durSteps * stepSeconds);
   if (voice === 'boneFlute') { scheduleBoneFlute(ctx, parent, event, when, stepSeconds); return; }
@@ -251,13 +282,16 @@ function scheduleVoice(ctx: AudioContext, parent: GainNode, event: NoteEvent, wh
   if (voice === 'strings') {
     scheduleStrings(ctx, parent, event, when, stepSeconds); return;
   }
+  if (voice === 'pluck') {
+    schedulePluck(ctx, parent, event, when); return;
+  }
   if (voice === 'distGuitar') {
     const distorted = getDistortion(ctx); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sawtooth'; osc.frequency.value = midiFrequency(event.midi ?? 40); gain.connect(distorted).connect(parent); const endTime = when + Math.max(0.08, event.durSteps * stepSeconds); connectOscillator(osc, gain, when, endTime, 0.2 * event.vel, 0.004); return;
   }
   if (voice === 'synthPulse') {
     scheduleOsc(ctx, parent, event, when, stepSeconds, 'square', 0.13, 0.003, 0, 'lowpass'); return;
   }
-  const type: OscillatorType = voice === 'pluck' ? 'triangle' : voice === 'drone' ? 'sine' : voice === 'bass' ? 'triangle' : 'sine';
+  const type: OscillatorType = voice === 'drone' ? 'sine' : voice === 'bass' ? 'triangle' : 'sine';
   const attack = voice === 'drone' ? 0.18 : 0.004;
   scheduleOsc(ctx, parent, event, when, stepSeconds, type, voice === 'bass' ? 0.18 : 0.2, attack);
 }

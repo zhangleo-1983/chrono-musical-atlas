@@ -150,6 +150,22 @@
 .repertoire-note.is-warning { color: #ffb5bd; }
 .repertoire-links { display: flex; flex-wrap: wrap; gap: 8px; }
 .repertoire-links a { color: var(--electronic); text-decoration: none; }
+.musician-list, .treatise-list { display: grid; gap: 7px; }
+.musician-item, .treatise-item { border-top: 1px solid rgba(143,164,224,.14); }
+.musician-toggle, .treatise-toggle { display: flex; width: 100%; min-width: 0; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 8px 0; border: 0; color: var(--text); background: transparent; cursor: pointer; text-align: left; }
+.musician-heading, .treatise-heading { display: grid; min-width: 0; gap: 2px; }
+.musician-heading strong, .treatise-heading strong { overflow: hidden; font-size: 12px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.musician-heading small, .treatise-heading small { overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.musician-known-for { flex: 0 1 45%; color: var(--muted); font-size: 10px; line-height: 1.4; text-align: right; }
+.musician-detail, .treatise-detail { padding: 0 0 10px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+.musician-detail p, .treatise-detail p { margin: 0 0 7px; }
+.musician-legacy { color: var(--gilt); }
+.musician-legacy b, .treatise-key-label { margin-right: 5px; color: var(--text); font-size: 10px; }
+.treatise-kind { flex: 0 0 auto; padding: 3px 5px; border: 1px solid rgba(167,123,255,.35); border-radius: 4px; color: var(--classical); font-size: 9px; white-space: nowrap; }
+.treatise-detail blockquote { display: grid; gap: 4px; margin: 8px 0 0; padding: 8px 10px; border-left: 2px solid var(--gilt); color: var(--text); background: rgba(216,178,106,.07); }
+.treatise-detail blockquote b { color: var(--gilt); font-size: 10px; }
+.treatise-detail blockquote span { line-height: 1.6; }
+.treatise-detail blockquote cite { color: var(--muted); font-size: 10px; font-style: normal; text-align: right; }
 .notation-decoder { display: grid; gap: 9px; margin-top: 20px; padding-top: 14px; border-top: 1px solid rgba(143,164,224,.16); }
 .notation-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .notation-head h3 { margin: 0; color: var(--text); font-size: 12px; letter-spacing: 0; text-transform: none; }
@@ -304,7 +320,7 @@
   .drawer-hero .play-button, .drawer-hero .clear-button { min-height: 24px; padding: 2px 6px; font-size: 10px; }
   .drawer-hero .close-button { width: 24px; height: 24px; font-size: 18px; }
   .drawer-tabs { margin: 2px 8px 0; padding: 2px; gap: 2px; }
-  .drawer-tabs button { min-height: 23px; padding: 2px; font-size: 9px; }
+  .drawer-tabs button { min-height: 30px; padding: 2px; font-size: 9px; }
   .drawer-footer { display: flex; align-items: center; gap: 6px; padding: 6px 8px; }
   .drawer-footer .lineage-links { flex: 1 1 auto; min-width: 0; max-height: none; overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; scrollbar-width: none; }
   .drawer-footer .lineage-links > * { flex: 0 0 auto; white-space: nowrap; }

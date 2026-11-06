@@ -5,6 +5,21 @@ import type { PatchId } from '../domain/types';
 import { PATCHES } from '../audio/patches';
 import { NODE_BY_ID, NODES, ODYSSEYS, PRESETS } from './index';
 
+function sharesRun(a: string, b: string, minimum: number): boolean {
+  for (let start = 0; start <= a.length - minimum; start += 1) {
+    if (b.includes(a.slice(start, start + minimum))) return true;
+  }
+  return false;
+}
+
+const ALLOWED_EXCERPTS = new Map([
+  ['zhou-ritual:《乐记》', '凡音之起，由人心生也。人心之动，物使之然也。感于物而动，故形于声。'],
+  ['zhou-ritual:《荀子·乐论》', '夫乐者，乐也，人情之所必不免也。'],
+  ['han-wei-yuefu:《乐记》', '乐者，天地之和也；礼者，天地之序也。'],
+  ['han-wei-yuefu:《声无哀乐论》', '然则心之与声，明为二物。'],
+  ['persian-silkroad:《隋书·音乐志》', '有龟兹人曰苏祗婆，从突厥皇后入国，善胡琵琶。'],
+]);
+
 describe('music dataset', () => {
   it('contains a connected, geographically valid MVP dataset', () => {
     expect(NODES).toHaveLength(34);
@@ -33,9 +48,33 @@ describe('music dataset', () => {
       expect(node.tuningSystem.length).toBeGreaterThan(0);
       expect(node.institution.length).toBeGreaterThan(0);
       expect(node.treatises.length).toBeGreaterThanOrEqual(2);
+      expect(node.treatiseList.map((treatise) => treatise.title)).toEqual(node.treatises);
+      expect(new Set(node.treatiseList.map((treatise) => treatise.id)).size).toBe(node.treatiseList.length);
+      for (const treatise of node.treatiseList) {
+        expect(treatise.digest.length).toBeGreaterThanOrEqual(50);
+        expect(treatise.digest.length).toBeLessThanOrEqual(110);
+        expect(Boolean(treatise.excerpt) !== Boolean(treatise.keyPoint)).toBe(true);
+        expect(Boolean(treatise.excerpt) === Boolean(treatise.excerptSource)).toBe(true);
+        if (treatise.excerpt) expect(ALLOWED_EXCERPTS.get(`${node.id}:${treatise.title}`)).toBe(treatise.excerpt);
+      }
       expect(node.story.length).toBeGreaterThanOrEqual(80);
       expect(node.story.length).toBeLessThanOrEqual(220);
       expect(node.story).not.toBe(node.summary);
+      for (const musician of node.musicians) {
+        expect(musician.bio.length).toBeGreaterThanOrEqual(60);
+        expect(musician.bio.length).toBeLessThanOrEqual(140);
+        expect(musician.legacy.length).toBeGreaterThanOrEqual(15);
+        expect(musician.legacy.length).toBeLessThanOrEqual(50);
+        expect(musician.legacy).not.toContain(musician.knownFor);
+        for (const source of [node.summary, node.story, node.institution, node.artifact]) expect(sharesRun(musician.bio, source, 12)).toBe(false);
+        expect(musician.bio).not.toContain('姑洗之宫，曾之大族');
+        expect(musician.legacy).not.toContain('姑洗之宫，曾之大族');
+      }
+      for (const treatise of node.treatiseList) {
+        expect(treatise.digest).not.toContain('姑洗之宫，曾之大族');
+        expect(treatise.keyPoint ?? '').not.toContain('姑洗之宫，曾之大族');
+        expect(treatise.excerpt ?? '').not.toContain('姑洗之宫，曾之大族');
+      }
       expect(node.treatises.some((treatise) => node.works.includes(treatise))).toBe(false);
       expect(node.institution.startsWith(`${node.region}的`)).toBe(false);
       expect(node.summary.length).toBeGreaterThanOrEqual(80);
@@ -104,6 +143,49 @@ describe('music dataset', () => {
     }
     for (const node of NODES.filter((candidate) => ['blues_jazz', 'rock_pop', 'electronic'].includes(candidate.genre))) {
       expect(node.repertoire.every((work) => !work.publicDomain)).toBe(true);
+    }
+    const musicians = NODES.flatMap((node) => node.musicians);
+    expect(musicians).toHaveLength(54);
+    expect(new Set(musicians.map((musician) => musician.bio)).size).toBe(musicians.length);
+    const bios = musicians.map((musician) => musician.bio);
+    for (let leftIndex = 0; leftIndex < bios.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < bios.length; rightIndex += 1) {
+        expect(sharesRun(bios[leftIndex]!, bios[rightIndex]!, 12)).toBe(false);
+      }
+    }
+    const legacies = musicians.map((musician) => musician.legacy);
+    for (let leftIndex = 0; leftIndex < legacies.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < legacies.length; rightIndex += 1) {
+        expect(sharesRun(legacies[leftIndex]!, legacies[rightIndex]!, 10)).toBe(false);
+      }
+    }
+    expect(NODES.flatMap((node) => node.treatiseList)).toHaveLength(68);
+    const treatises = NODES.flatMap((node) => node.treatiseList);
+    const digests = treatises.map((treatise) => treatise.digest);
+    for (let leftIndex = 0; leftIndex < digests.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < digests.length; rightIndex += 1) {
+        expect(sharesRun(digests[leftIndex]!, digests[rightIndex]!, 12)).toBe(false);
+      }
+    }
+    const keyPoints = treatises.flatMap((treatise) => treatise.keyPoint ? [treatise.keyPoint] : []);
+    for (let leftIndex = 0; leftIndex < keyPoints.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < keyPoints.length; rightIndex += 1) {
+        expect(sharesRun(keyPoints[leftIndex]!, keyPoints[rightIndex]!, 12)).toBe(false);
+      }
+    }
+    const forbiddenBoilerplate = [
+      '形成了可追踪的实践线索',
+      '成为研究相关传统时的重要参照',
+      '为理解当时的音乐实践提供线索',
+      '待考',
+      '尚待新材料',
+      '彼此相连',
+      '补足了现场细节',
+      '第一条线索',
+      '共同标出',
+    ];
+    for (const text of [...bios, ...legacies, ...digests, ...keyPoints]) {
+      for (const phrase of forbiddenBoilerplate) expect(text).not.toContain(phrase);
     }
     const themes = NODES.flatMap((node) => node.repertoire.filter((work) => work.motifKind === 'theme').map((work) => `${node.id}:${work.title}`));
     expect(themes.sort()).toEqual(['leipzig-baroque:《平均律键盘曲集》', 'vienna-classical:《月光奏鸣曲》', 'vienna-classical:《第五交响曲》']);
