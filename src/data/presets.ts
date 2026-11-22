@@ -8,4 +8,6 @@ export const PRESETS: ComparePreset[] = [
   { id: 'bells-vs-greek', label: '金石天道 × 数理宇宙', a: 'zenghouyi-bells', b: 'greek-modes' },
   { id: 'hurrian-vs-zhou', label: '泥板记谱 × 礼乐琴道', a: 'hurrian-hymn', b: 'zhou-ritual' },
   { id: 'hanwei-vs-hebrew', label: '琴道风骨 × 圣殿轮唱', a: 'han-wei-yuefu', b: 'hebrew-temple' },
+  { id: 'tang-vs-notre-dame', label: '教坊琵琶 × 巴黎复调', a: 'tang-changan', b: 'notre-dame-polyphony' },
+  { id: 'kunqu-vs-renaissance', label: '水磨腔 × 文艺复兴复调', a: 'suzhou-kunqu', b: 'renaissance-polyphony' },
 ];

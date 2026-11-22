@@ -38,7 +38,7 @@ export const TREATISES_BY_NODE: Record<string, TreatiseItem[]> = {
     {"id":"leipzig-baroque-art-fugue-2","title":"《赋格的艺术》手稿","authorEra":"约1742—1750年 · 约翰·塞巴斯蒂安·巴赫","kind":"inscription-artifact","digest":"用同一个d小调主题写成十余首赋格和卡农。亲笔手稿约始于1742年，今藏柏林国家图书馆。1751年巴赫去世后出版，最后一首赋格写到以 B-A-C-H 为主题的段落时中断。","keyPoint":"手稿上卡尔·菲利普·埃马努埃尔写道，作者写到这里就去世了；但现代研究认为中断可能早于去世。"},
   ],
   "gamelan": [
-    {"id":"gamelan-kunst-1","title":"Jaap Kunst《Music in Java》（1934）","authorEra":"1934年 · Jaap Kunst","kind":"modern-record","digest":"荷兰学者孔斯特根据在爪哇多年的田野录音和测音写成，系统测定了斯连德罗、佩洛格两种音阶的音分值，并记录各类乐器的形制与宫廷乐队编制。","keyPoint":"荷兰文原版1934年出版，英文版1949年才问世。孔斯特后来提出了“民族音乐学”（ethnomusicology）一词。"},
+    {"id":"gamelan-kunst-1","title":"Jaap Kunst《Music in Java》（1934）","authorEra":"1934 年荷兰文初版《De toonkunst van Java》；1949 年英文增订版","kind":"modern-record","digest":"荷兰学者孔斯特据在爪哇多年的田野录音与测音写成，1934 年以荷兰文出版，1949 年出英文增订版，系统测定斯连德罗、佩洛格两种音阶的音分值。","keyPoint":"孔斯特后来提出“民族音乐学”一词；书中的音分测量用他自制的设备完成，个别数值与后来的研究有出入。"},
     {"id":"gamelan-court-2","title":"宫廷加美兰谱本","authorEra":"近世以来 · 爪哇宫廷乐师","kind":"oral-tradition","digest":"19世纪末，梭罗王宫创制了用阿拉伯数字记写骨架旋律的“凯帕蒂汉”简谱，日惹宫廷则用格子状的纵向谱。两种谱都只记主旋律，装饰声部仍靠乐师即兴发挥。","keyPoint":"乐谱主要用于保存和教学，正式演出时乐师大多背谱，不看谱演奏。"},
   ],
   "vienna-classical": [
@@ -114,7 +114,7 @@ export const TREATISES_BY_NODE: Record<string, TreatiseItem[]> = {
     {"id":"andean-chavin-chavin-acoustics-2","title":"安第斯仪式建筑声学研究","authorEra":"现代跨学科研究 · 建筑声学与考古","kind":"modern-record","digest":"斯坦福计算机音乐与声学研究中心的米里亚姆·科拉尔等人，用复制的海螺号在原址廊道内播放并测量，发现廊道的形状会让声音变得模糊难辨，听者很难判断声源方向。","keyPoint":"测量是在现代修复后的廊道中进行的，结论属于推测古人可能的感受，不是对古代仪式的直接记录。"},
   ],
   "zenghouyi-bells": [
-    {"id":"zenghouyi-bells-zuozhuan-1","title":"《左传》伶州鸠论律","authorEra":"春秋末至战国文献传统 · 作者不详","kind":"canonical-text","digest":"周景王想铸大钟“无射”，乐官伶州鸠认为钟太大，音不和谐，会劳民伤财。他还讲到黄钟、大吕等十二律的名称与含义。这段对话在《国语·周语下》中记载得最为详细。","keyPoint":"《左传·昭公二十一年》只是简略提到此事，完整的论律内容要读《国语》。"},
+    {"id":"zenghouyi-bells-guoyu-1","title":"《国语·周语下》","authorEra":"约战国初期成书 · 记周景王与伶州鸠问答","kind":"canonical-text","digest":"记周景王二十三年将铸无射钟，乐官伶州鸠论律，逐一说明十二律的次序、五声与七律的关系，并以“纪之以三，平之以六，成于十二”概括生律之法。","keyPoint":"《左传·昭公二十一年》另记伶州鸠论乐，与此章互为参证；两书文字不同，不可混引。"},
     {"id":"zenghouyi-bells-zenghouyi-2","title":"曾侯乙编钟铭文释读","authorEra":"战国时期铭文 · 现代考古释读","kind":"inscription-artifact","digest":"编钟及钟架上共有铭文三千七百多字，标出每个钟发出的音名，以及这些音在曾、楚、周、齐、申等国律制中的对应名称，相当于一份刻在青铜上的乐律对照表。","keyPoint":"铭文中的许多律名不见于传世文献，释读至今仍在补充。"},
   ],
   "persian-silkroad": [
@@ -137,5 +137,31 @@ export const TREATISES_BY_NODE: Record<string, TreatiseItem[]> = {
     {"id":"maya-ritual-dresden-1","title":"《德累斯顿抄本》研究","authorEra":"后古典期抄本 · 现代玛雅学研究","kind":"modern-record","digest":"用无花果树皮纸折叠而成，共三十九页，是现存最完整的玛雅书籍之一。书中有金星周期表和日食表，以及按历法日期排列的祭祀图像。1880年德国学者弗斯特曼首先破译了其中的历法。","keyPoint":"抄本本身几乎没有音乐内容，只能借历法推测仪式举行的时间，乐器形象要看壁画和陶器。"},
     {"id":"maya-ritual-bonampak-2","title":"博南帕克壁画乐队研究","authorEra":"约公元790年壁画 · 现代考古研究","kind":"inscription-artifact","digest":"1946年外界首次见到这组壁画。1号建筑三间画室分别描绘王位继承、战争和庆典，耶鲁大学的玛丽·米勒团队用红外摄影重新描绘了已经褪色的乐队细节。","keyPoint":"壁画所描绘的是一次具体的宫廷庆典，乐队规模不一定代表日常仪式。"},
   ],
+"tang-changan": [
+  {"id":"tang-changan-jiaofang-1","title":"《教坊记》","authorEra":"唐 · 崔令钦（约 8 世纪中叶）","kind":"canonical-text","digest":"追记开元、天宝年间教坊旧事，列乐人姓名、歌舞曲名与演出规矩，末卷收曲名三百余首，是唐代俗乐机构最直接的一份记录。","keyPoint":"作者自序说写于安史乱后，靠记忆追述；所记多为长安左教坊见闻，不能当作全国乐制的通则。"},
+  {"id":"tang-changan-jiutang-2","title":"《旧唐书·音乐志》","authorEra":"五代后晋 · 刘昫等修","kind":"canonical-text","digest":"四卷篇幅叙述唐初至末年的乐制沿革：九部乐、十部乐的部类与乐工编制，坐部伎、立部伎的分工，以及大曲、法曲在宫廷中的位置。","keyPoint":"成书于后晋，材料多取自唐代国史与实录；同一事常与《新唐书·礼乐志》互有详略，需对读。"},
+  {"id":"tang-changan-p3808-3","title":"敦煌 P.3808 琵琶谱","authorEra":"晚唐五代 · 抄手不详（法藏敦煌写卷）","kind":"inscription-artifact","digest":"卷子背面抄有琵琶曲二十五首，用约二十个谱字记四弦四相的柱位，旁附“口”“丁”等节拍符号，是现存规模最大的唐代琵琶谱。","keyPoint":"谱卷未注明定弦，林谦三、叶栋、陈应时的解译彼此不同，据此还原的音高只能算一家之说。"},
+],
+"andalus-cordoba": [
+  {"id":"andalus-cordoba-cantigas-1","title":"《圣母颂歌集》","authorEra":"约 1270—1284 年编纂 · 阿方索十世主持","kind":"canonical-text","digest":"存四百二十余首加列戈-葡萄牙语颂歌，抄本四种，埃斯科里亚尔本插图最丰，画中乐师分持乌德、雷巴布、竖琴与管风琴，是伊比利亚多宗教音乐生活的图像总集。","keyPoint":"插图所绘乐器未必都在当地使用，有些是按异域志的想象补入；抄本的编排顺序也不等于演奏顺序。"},
+  {"id":"andalus-cordoba-nafh-2","title":"al-Maqqarī《Nafḥ al-ṭīb》","authorEra":"17 世纪 · 艾哈迈德·马卡里","kind":"canonical-text","digest":"这部伊比利亚穆斯林文化史成书于 17 世纪，其中对齐里亚布在科尔多瓦的记述最为详尽，包括他增设琴弦、改用鹰羽拨弦与排定努巴的做法。","keyPoint":"成书距齐里亚布去世已近八百年，属晚出辑录，所据早期材料今多不存，细节需与同期记载互证。"},
+],
+"notre-dame-polyphony": [
+  {"id":"notre-dame-polyphony-magnus-1","title":"《奥尔加农大全》","authorEra":"12 世纪后半叶编成 · 归于莱奥南","kind":"canonical-text","digest":"为全年瞻礼的升阶经与阿肋路亚而编的二声部奥尔加农曲集，今存佛罗伦萨劳伦齐阿纳抄本与沃尔芬比特尔抄本等版本，各本曲目与编排并不一致。","keyPoint":"曲集原本已失，现存抄本晚于编成年代数十年，莱奥南究竟写了哪些曲子，只能据佚名理论家的记载推测。"},
+  {"id":"notre-dame-polyphony-franco-2","title":"科隆的弗兰科《量度音乐艺术》","authorEra":"约 1280 年 · 科隆的弗兰科","kind":"canonical-text","digest":"讨论有量记谱的专著，把音符形状与固定时值对应起来，提出短拍三分与二分并存的比例规则，使多声部作品的节奏第一次可以被精确书写。","keyPoint":"书中规则针对 13 世纪后期的曲目，用它去读早一代的圣母院手稿会错判时值。"},
+],
+"suzhou-kunqu": [
+  {"id":"suzhou-kunqu-baishi-1","title":"《白石道人歌曲》","authorEra":"约 1200 年前后 · 姜夔","kind":"canonical-text","digest":"六卷，收词调歌曲十七首，每首旁注俗字谱，另有琴歌《古怨》用减字谱。这是宋代唯一留下成体系乐谱的词乐集，20 世纪经杨荫浏等人译谱后可以歌唱。","keyPoint":"十七首俗字谱与《古怨》的减字谱是两套体系，不能混为一谈；译谱的音高与节奏各家仍有出入。"},
+  {"id":"suzhou-kunqu-qulv-2","title":"魏良辅《曲律》","authorEra":"明嘉靖年间 · 魏良辅（又名《南词引正》）","kind":"canonical-text","digest":"二十余则唱论，讲五音四呼、字头字腹字尾的处理、曲牌联套与伴奏分工，并追述昆山腔的来历，是昆曲唱法最早的成文总结。","keyPoint":"全书为口授要点，不是系统教程；现存版本文字互有出入，明刊本与后世抄本条目数不同。"},
+  {"id":"suzhou-kunqu-taihe-3","title":"朱权《太和正音谱》","authorEra":"1398 年 · 宁王朱权","kind":"canonical-text","digest":"北曲曲谱与曲论合集，按十二宫调收录三百余支曲牌的句格与平仄，附元明杂剧作家评语，是现存最早的北曲格律谱。","keyPoint":"所收为北曲，与昆曲所用的南曲曲牌体系有别；书中评语带个人好恶，不能当史料直引。"},
+],
+"renaissance-polyphony": [
+  {"id":"renaissance-polyphony-zarlino-1","title":"扎利诺《和声法则》","authorEra":"1558 年 · 焦塞福·扎利诺","kind":"canonical-text","digest":"四卷，从音程比例讲到调式与对位，主张大小三度是协和音程，并以古代调式理论重排教会调式，为文艺复兴后期的和声实践提供依据。","keyPoint":"作者是理论家兼作曲家，书中部分调式方案是为论证古典渊源而设，与实际创作并不完全一致。"},
+  {"id":"renaissance-polyphony-glar-2","title":"格拉雷安《十二调式论》","authorEra":"1547 年 · 海因里希·格拉雷安","kind":"canonical-text","digest":"把中世纪传下的八个教会调式扩为十二个，补入以 C 与 A 为主音的两种，并以古希腊民族名重新命名，影响了此后两百年的调式理论。","keyPoint":"新增两调的依据来自古代文献的重新解读，与当时作曲家实际使用的调式分类并不完全对应。"},
+],
+"aztec-tenochtitlan": [
+  {"id":"aztec-tenochtitlan-cantares-1","title":"《墨西哥人之歌》","authorEra":"16 世纪中后期 · 纳瓦特尔语抄本","kind":"canonical-text","digest":"纳瓦特尔语诗歌总集，收“花与歌”体裁的赞歌、战歌与哲理诗，歌词旁偶有 ti、to、co、qui 一类音节，被认为提示鼓点与吟唱的分节。","keyPoint":"抄本成于西班牙征服之后，由传教士与土著书手合作录写，诗歌的原始演出方式只能部分复原。"},
+  {"id":"aztec-tenochtitlan-sahagun-2","title":"萨阿贡《新西班牙事物通史》","authorEra":"16 世纪 · 贝尔纳迪诺·德·萨阿贡","kind":"canonical-text","digest":"十二卷，用西班牙文与纳瓦特尔文对照记录墨西哥中部的物产、礼仪、教育与技艺，其中论乐舞的章节详列神庙乐器、乐官职责与节期歌咏。","keyPoint":"由传教士主持编纂，特拉斯卡拉与特诺奇蒂特兰的报道人提供的材料侧重不同，读时需分辨信息来源。"},
+],
 };
 

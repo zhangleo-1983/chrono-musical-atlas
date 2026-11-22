@@ -272,5 +272,53 @@ export const ARTIFACT_IMAGES: Readonly<Record<string, ArtifactImage>> = {
     "license": "CC BY-SA 2.0",
     "credit": "Brandon Daniel",
     "caption": "Roland TR-909 鼓机"
+  },
+  "tang-changan": {
+    "file": "File:Tang Sancai Porcelain with Musicians on a Camel.jpg",
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Tang_Sancai_Porcelain_with_Musicians_on_a_Camel.jpg/960px-Tang_Sancai_Porcelain_with_Musicians_on_a_Camel.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Tang_Sancai_Porcelain_with_Musicians_on_a_Camel.jpg",
+    "license": "CC0",
+    "credit": "Gary Todd",
+    "caption": "唐三彩骆驼载乐俑：驼背平台上为一组乐手"
+  },
+  "andalus-cordoba": {
+    "file": "File:Capitel de los Músicos (Córdoba).jpg",
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d2/Capitel_de_los_M%C3%BAsicos_%28C%C3%B3rdoba%29.jpg/960px-Capitel_de_los_M%C3%BAsicos_%28C%C3%B3rdoba%29.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Capitel_de_los_M%C3%BAsicos_(C%C3%B3rdoba).jpg",
+    "license": "CC BY 4.0",
+    "credit": "José Luis Filpo Cabana",
+    "caption": "科尔多瓦的“乐师柱头”：石雕上刻有持乐器的人物"
+  },
+  "notre-dame-polyphony": {
+    "file": "File:Organum over the responsorium \"Operibus suis\".jpg",
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Organum_over_the_responsorium_%22Operibus_suis%22.jpg/960px-Organum_over_the_responsorium_%22Operibus_suis%22.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Organum_over_the_responsorium_%22Operibus_suis%22.jpg",
+    "license": "Public domain",
+    "credit": "约 1175 年抄本 · 巴黎圣母院学派（佚名）",
+    "caption": "《Operibus suis》应答经上的二声部奥尔加农谱，方形纽姆记在谱线上"
+  },
+  "suzhou-kunqu": {
+    "file": "File:Peony Pavilion （牡丹亭）3.jpg",
+    "src": "https://upload.wikimedia.org/wikipedia/commons/1/1f/Peony_Pavilion_%EF%BC%88%E7%89%A1%E4%B8%B9%E4%BA%AD%EF%BC%893.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Peony_Pavilion_%EF%BC%88%E7%89%A1%E4%B8%B9%E4%BA%AD%EF%BC%893.jpg",
+    "license": "CC BY-SA 2.0",
+    "credit": "Bohan Shen（Flickr）",
+    "caption": "昆曲《牡丹亭》的舞台演出照"
+  },
+  "renaissance-polyphony": {
+    "file": "File:Petrucci-odhecaton-front.jpg",
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b6/Petrucci-odhecaton-front.jpg/960px-Petrucci-odhecaton-front.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Petrucci-odhecaton-front.jpg",
+    "license": "Public domain",
+    "credit": "奥塔维亚诺·彼得鲁奇（1501 年威尼斯印本）",
+    "caption": "《奥德卡顿》1501 年印本卷首，第一部用活字印刷的乐谱集"
+  },
+  "aztec-tenochtitlan": {
+    "file": "File:Teponaztli ritual drum-71.1952.71.1-DSC00054-black.jpg",
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Teponaztli_ritual_drum-71.1952.71.1-DSC00054-black.jpg/960px-Teponaztli_ritual_drum-71.1952.71.1-DSC00054-black.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File:Teponaztli_ritual_drum-71.1952.71.1-DSC00054-black.jpg",
+    "license": "CC BY-SA 3.0 fr",
+    "credit": "Rama",
+    "caption": "阿兹特克双舌木鼓（博物馆藏品）"
   }
 };

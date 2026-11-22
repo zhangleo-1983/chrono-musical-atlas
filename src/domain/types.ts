@@ -1,9 +1,9 @@
 export type EraId = 'ancient' | 'medieval' | 'baroque' | 'romantic' | 'modern' | 'contemporary';
 export type GenreId = 'ritual' | 'classical' | 'folk' | 'blues_jazz' | 'rock_pop' | 'electronic';
 export type Continent = 'asia' | 'europe' | 'africa' | 'americas';
-export type PatchId = 'pentatonic-pluck' | 'modal-drone' | 'polyrhythm-drums' | 'baroque-harpsichord' | 'classical-strings' | 'swing-jazz' | 'rock-distortion' | 'electro-pulse' | 'bone-flute' | 'bronze-bells' | 'ancient-lyre' | 'silk-ud' | 'hydraulis-organ';
-export type FigureId = 'flute' | 'bells' | 'qin' | 'lyre' | 'harmonic' | 'lute' | 'organ' | 'rhythm';
-export type Voice = 'pluck' | 'piano' | 'drone' | 'harpsichord' | 'strings' | 'epiano' | 'bass' | 'distGuitar' | 'synthPulse' | 'kick' | 'snare' | 'hat' | 'djembeLow' | 'djembeHigh' | 'bell' | 'boneFlute' | 'bronzeBell' | 'lyre' | 'ud' | 'organ' | 'frameDrum';
+export type PatchId = 'pentatonic-pluck' | 'modal-drone' | 'polyrhythm-drums' | 'baroque-harpsichord' | 'classical-strings' | 'swing-jazz' | 'rock-distortion' | 'electro-pulse' | 'bone-flute' | 'bronze-bells' | 'ancient-lyre' | 'silk-ud' | 'hydraulis-organ' | 'choral-organum' | 'lute-pipa' | 'bamboo-flute';
+export type FigureId = 'flute' | 'bells' | 'qin' | 'lyre' | 'harmonic' | 'lute' | 'organ' | 'rhythm' | 'voices';
+export type Voice = 'pluck' | 'piano' | 'drone' | 'harpsichord' | 'strings' | 'epiano' | 'bass' | 'distGuitar' | 'synthPulse' | 'kick' | 'snare' | 'hat' | 'djembeLow' | 'djembeHigh' | 'bell' | 'boneFlute' | 'bronzeBell' | 'lyre' | 'ud' | 'organ' | 'frameDrum' | 'lute' | 'choir' | 'bambooFlute';
 export interface MotifEvent { step: number; midi: number | number[]; durSteps: number; vel?: number }
 export interface Motif { bpm: number; stepsPerBeat: number; voice: Voice; wet: number; events: MotifEvent[] }
 

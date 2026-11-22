@@ -80,12 +80,37 @@ const hydraulisOrgan: Patch = {
     [8, 48], [8, 55], [8, 60], [10, 67], [12, 72], [14, 67],
   ] as [number, number][]).map(([step, midi]) => note(step, 'organ', midi, 2, 0.42)),
 };
+const choralOrganum: Patch = {
+  id: 'choral-organum', label: '多声部元音共振合唱', bpm: 52, stepsPerBeat: 2, swing: 0, bars: 2, beatsPerBar: 4, wet: 0.42,
+  events: [
+    [48, 55, 60, 67].map((midi) => note(0, 'choir', midi, 8, 0.34)),
+    [50, 57, 62, 69].map((midi) => note(4, 'choir', midi, 8, 0.31)),
+    [52, 60, 64, 67].map((midi) => note(8, 'choir', midi, 6, 0.3)),
+    [53, 60, 65, 69].map((midi) => note(12, 'choir', midi, 6, 0.28)),
+  ].flat(),
+};
+const lutePipa: Patch = {
+  id: 'lute-pipa', label: '曲项琵琶与复弦鲁特', bpm: 88, stepsPerBeat: 2, swing: 0, bars: 2, beatsPerBar: 4, wet: 0.3,
+  events: [
+    note(0, 'lute', 60, 2, 0.6), note(2, 'lute', 62, 2, 0.54), note(4, 'lute', 64, 2, 0.58), note(4, 'lute', 64, 1, 0.32),
+    note(6, 'lute', 67, 2, 0.56), note(8, 'lute', 69, 2, 0.62), note(10, 'lute', 67, 2, 0.5), note(12, 'lute', 64, 2, 0.54),
+    note(12, 'lute', 64, 1, 0.3), note(14, 'lute', 62, 2, 0.48),
+  ],
+};
+const bambooFlute: Patch = {
+  id: 'bamboo-flute', label: '江南曲笛与竹膜', bpm: 56, stepsPerBeat: 2, swing: 0, bars: 2, beatsPerBar: 4, wet: 0.34,
+  events: [
+    note(0, 'bambooFlute', 60, 6, 0.56), note(2, 'bambooFlute', 62, 4, 0.5), note(4, 'bambooFlute', 64, 6, 0.54),
+    note(6, 'bambooFlute', 67, 4, 0.5), note(8, 'bambooFlute', 69, 8, 0.58), note(10, 'bambooFlute', 67, 4, 0.48), note(12, 'bambooFlute', 64, 4, 0.46),
+  ],
+};
 
 export const PATCHES: Record<PatchId, Patch> = {
   'pentatonic-pluck': pentatonic, 'modal-drone': modalDrone, 'polyrhythm-drums': polyrhythm, 'baroque-harpsichord': baroque,
   'classical-strings': classical, 'swing-jazz': swing, 'rock-distortion': rock, 'electro-pulse': electro,
   'bone-flute': boneFlute, 'bronze-bells': bronzeBells, 'ancient-lyre': ancientLyre,
   'silk-ud': silkUd, 'hydraulis-organ': hydraulisOrgan,
+  'choral-organum': choralOrganum, 'lute-pipa': lutePipa, 'bamboo-flute': bambooFlute,
 };
 
 export const BELL_PARTIALS = [1, 1.2, 2.76, 4.07, 5.4];

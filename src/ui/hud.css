@@ -297,9 +297,9 @@
   .compare-dock { right: calc(50vw + 8px); bottom: calc(var(--timeline-h) + 8px); }
   .compare-dock.is-expanded { right: calc(50vw + 8px); }
   .map-node-label { font-size: 9px; }
-  /* Leave room for the top bar (48px) and the active odyssey stepper (48–90px) above the sheet. */
   .node-drawer { top: 48px; right: 0; bottom: 0; left: auto; width: min(50vw, 420px); height: auto; max-height: none; overflow-y: auto; border-top: 0; border-right: 0; border-bottom: 0; border-left: 1px solid var(--border); border-radius: 14px 0 0 0; box-shadow: -20px 0 50px rgba(0,0,0,.32); }
-  .node-drawer.is-odyssey-active { top: 96px; }
+  /* 巡礼条固定在左半屏（right: calc(50vw + 8px)），抽屉固定在右半屏，两者左右并排，不再上下让位。 */
+  .node-drawer.is-odyssey-active { top: 48px; }
   .drawer-hero { grid-template-rows: auto auto; gap: 1px 6px; padding: 2px 8px 0; }
   .drawer-hero .drawer-heading { grid-column: 1; align-self: start; height: 20px; gap: 5px; }
   .drawer-meta { grid-column: 1; grid-row: 2; }

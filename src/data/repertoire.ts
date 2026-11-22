@@ -25,6 +25,10 @@ const moonlightTheme = theme(54, 3, 'piano', [
   { step: 9, midi: [37, 56], durSteps: 1 }, { step: 10, midi: 61, durSteps: 1 }, { step: 11, midi: 64, durSteps: 1 },
 ], '贝多芬《月光奏鸣曲》Op.27 No.2 第一乐章开头伴奏型');
 const bachTheme = theme(72, 4, 'harpsichord', [60, 64, 67, 72, 76, 67, 72, 76, 60, 64, 67, 72, 76, 67, 72, 76].map((midi, step) => ({ step, midi, durSteps: 1 })), '巴赫《平均律键盘曲集》BWV 846 前奏曲第一小节');
+const renaissanceTheme = theme(88, 2, 'choir', [
+  { step: 0, midi: 67, durSteps: 1 }, { step: 1, midi: 72, durSteps: 1 }, { step: 2, midi: 72, durSteps: 1 },
+  { step: 3, midi: 74, durSteps: 1 }, { step: 4, midi: 76, durSteps: 1 }, { step: 5, midi: 72, durSteps: 2 },
+], '彼得鲁奇《Motetti A》（1502 年威尼斯）所收四声部经文歌，取上声部起句 G–C–C–D–E–C');
 
 export const REPERTOIRE_BY_NODE: Record<string, WorkItem[]> = {
   'vedic-chant': [
@@ -161,5 +165,29 @@ export const REPERTOIRE_BY_NODE: Record<string, WorkItem[]> = {
   'maya-ritual': [
     item('maya-ritual', 'Maya Ritual Music', 'bonampak-band', '博南帕克壁画乐队场景', '壁画与乐队导赏', '博南帕克壁画保存了鼓手、号角手和仪式队列的视觉证据，但没有可解读的旋律谱。导赏把图像、年代和宫廷场景分开讨论，示意声响只解释合奏层次，不声称复原古典期曲目。', true, '古典期壁画与考古图像，无完整旋律'),
     item('maya-ritual', 'Maya Ritual Music', 'maya-whistle', '玛雅陶制哨笛与多腔笛', '器物声学导赏', '多腔陶笛能制造复杂共鸣，但器物本身不能告诉我们一首完整歌曲的顺序。导赏关注腔体、气流和仪式合奏的可能关系，示意音型明确是听觉说明，不是玛雅原始谱。', true, '考古器物与图像材料，无完整旋律'),
+  ],
+  'tang-changan': [
+    item('tang-changan', 'Tang Chang’an Court Music', 'tang-ni-shang', '《霓裳羽衣曲》', '唐代法曲大曲', '白居易《霓裳羽衣歌》写散序六奏不起舞、中序入拍、破十二遍而终，这是诗证不是谱面；今存曲调无一处可确指，试听只按诗意铺出三段轮廓。', true, '白居易诗证与后世曲名传统', evocation(62, 2, 'lute', [60, 62, 64, 67, 69, 67, 64, 62]), 'evocation'),
+    item('tang-changan', 'Tang Chang’an Court Music', 'tang-qingbei', '《倾杯乐》', '敦煌 P.3808 首曲', '敦煌写卷 P.3808 抄录的第一首，题《倾杯乐》，旧说长孙无忌奉诏创制。谱字只记柱位，定弦不明，此处按五声骨架还原其急管繁弦的气息。', true, '敦煌 P.3808 写卷与后世研究', evocation(86, 2, 'lute', [60, 64, 67, 69, 67, 64, 62, 60]), 'evocation'),
+  ],
+  'andalus-cordoba': [
+    item('andalus-cordoba', 'Andalusian Cordoba', 'andalus-cantigas-100', '《圣母颂歌集·第一百首：晨星》', '埃斯科里亚尔抄本颂歌', '颂歌集第一百首，副歌称圣母为“白昼之星”。抄本用方形纽姆记谱，音高清楚、节奏长短仍有争议，试听按常见的等拍读法示意。', true, '《圣母颂歌集》抄本传统', evocation(70, 2, 'ud', [62, 64, 67, 69, 67, 64, 62, 60]), 'evocation'),
+    item('andalus-cordoba', 'Andalusian Cordoba', 'andalus-nuba-isfahan', '《努巴·伊斯法罕序曲》', '科尔多瓦宫廷套曲', '努巴是按调式与节奏循环编排的套曲，一套可演数小时。伊斯法罕是其中一种调式名，此处只取乌德琴与手鼓的起手段落，不代表原套曲的完整结构。', true, '努巴口传与调式传统', evocation(78, 2, 'ud', [60, 62, 63, 66, 67, 69, 67, 63]), 'evocation'),
+  ],
+  'notre-dame-polyphony': [
+    item('notre-dame-polyphony', 'Notre-Dame Polyphony', 'notre-dame-viderunt', '《普世欢腾》', '佩罗坦四声部奥尔加农', '圣诞瞻礼的升阶经，底层圣咏长音被拉到极致，三个声部在上方交错。单声部合成器无法复现四部织体，试听只取起句轮廓。', true, '巴黎圣母院复调谱本传统', evocation(58, 2, 'choir', [60, 67, 72, 74, 72, 67, 60, 62]), 'evocation'),
+    item('notre-dame-polyphony', 'Notre-Dame Polyphony', 'notre-dame-easter', '《哈利路亚·复活节基督》', '圣母院二声部曲目', '复活节的阿肋路亚，出自圣母院曲目，二声部奥尔加农之后接克劳苏拉段落，节奏模式在短小音型上反复，此处只还原其节律感。', true, '巴黎圣母院复调谱本传统', evocation(66, 2, 'choir', [67, 69, 72, 74, 72, 69, 67, 65]), 'evocation'),
+  ],
+  'suzhou-kunqu': [
+    item('suzhou-kunqu', 'Suzhou Kunqu', 'suzhou-baishi-guyan', '《白石道人歌曲·古怨》', '姜夔琴歌', '姜夔自度琴歌，旁谱用减字谱记指法，与同书十七首词调的俗字谱不是一套体系。译谱以杨荫浏、丘琼荪两家影响最大，试听取其歌腔轮廓。', true, '姜夔旁谱与后世译谱', evocation(64, 2, 'bambooFlute', [60, 62, 64, 67, 69, 67, 64, 62]), 'evocation'),
+    item('suzhou-kunqu', 'Suzhou Kunqu', 'suzhou-peony-garden', '《牡丹亭·游园（皂罗袍）》', '昆曲水磨腔名段', '“原来姹紫嫣红开遍”一段，曲牌【皂罗袍】，闺门旦的唱功试金石。水磨腔的润腔、气口与擞腔无法用合成器还原，试听只示骨干音与板眼。', true, '《牡丹亭》刻本与昆曲传承', evocation(60, 2, 'bambooFlute', [64, 67, 69, 72, 69, 67, 64, 62]), 'evocation'),
+  ],
+  'renaissance-polyphony': [
+    item('renaissance-polyphony', 'Renaissance Polyphony', 'renaissance-ave-maria', '《圣母颂》', '若斯坎四声部经文歌', '开篇一句问候由四个声部依次接住，动机在八度与同度间起落，是模仿对位最干净的样本。试听取上声部起句，逐音照 1502 年印本。', true, '彼得鲁奇《Motetti A》（1502 年威尼斯）', renaissanceTheme, 'theme', '彼得鲁奇《Motetti A》（1502 年威尼斯）所收四声部经文歌，取上声部起句 G–C–C–D–E–C'),
+    item('renaissance-polyphony', 'Renaissance Polyphony', 'renaissance-marcella', '《教宗玛切禄弥撒》', '帕莱斯特里纳六声部弥撒', '传说此曲说服特伦托会议保留复调礼拜乐，故事未必可靠；音乐本身以级进旋律、清晰吐词和节制的不协和音著称，试听只示其和声骨架。', true, '帕莱斯特里纳公版总谱', evocation(72, 2, 'choir', [60, 64, 67, 72, 67, 64, 60, 62]), 'evocation'),
+  ],
+  'aztec-tenochtitlan': [
+    item('aztec-tenochtitlan', 'Aztec Tenochtitlan Ritual Music', 'aztec-flower-song', '《春之花歌》', '《墨西哥人之歌》诗篇', '“花与歌”是阿兹特克诗歌的核心意象，抄本里的歌词旁偶有 ti、to、co、qui 等音节提示鼓点。此处按双舌木鼓的两音交替作节奏示意。', true, '《墨西哥人之歌》抄本', evocation(84, 3, 'djembeLow', [48, 55, 48, 55, 48, 55, 48, 55]), 'evocation'),
+    item('aztec-tenochtitlan', 'Aztec Tenochtitlan Ritual Music', 'aztec-temple-drums', '《大神庙双音木鼓与海螺祭礼》', '特诺奇蒂特兰仪式合奏', '大神庙顶端两座神龛分祀太阳与雨神，祭礼以海螺号起，双舌木鼓与立鼓应答。此处只叠出鼓与号两层，不还原具体节期的曲目。', true, '神庙器物与萨阿贡记载', evocation(76, 3, 'djembeHigh', [60, 60, 67, 60, 60, 67, 60, 60]), 'evocation'),
   ],
 };

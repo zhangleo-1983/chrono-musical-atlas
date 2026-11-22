@@ -5,6 +5,7 @@ import { ARTIFACT_IMAGES } from './images';
 const ALLOWED_LICENSES = new Set([
   'Public domain', 'CC0', 'CC BY 2.0', 'CC BY 3.0', 'CC BY-SA 1.0',
   'CC BY-SA 2.0', 'CC BY-SA 3.0', 'CC BY-SA 4.0',
+  'CC BY 4.0', 'CC BY-SA 3.0 fr',
 ]);
 
 describe('artifact image metadata', () => {

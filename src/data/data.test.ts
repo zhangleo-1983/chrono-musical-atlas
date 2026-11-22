@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import { describe, expect, it } from 'vitest';
 import { ERA_IDS } from '../domain/eras';
 import { GENRES } from '../domain/genres';
@@ -22,11 +24,15 @@ const ALLOWED_EXCERPTS = new Map([
 
 describe('music dataset', () => {
   it('contains a connected, geographically valid MVP dataset', () => {
-    expect(NODES).toHaveLength(34);
+    expect(NODES).toHaveLength(40);
     expect(new Set(NODES.filter((n) => n.era === 'ancient').map((n) => n.id))).toEqual(new Set([
       'jiahu-flute', 'sumer-lyre', 'egypt-temple', 'hurrian-hymn', 'andean-chavin', 'zenghouyi-bells',
       'persian-silkroad', 'roman-hydraulis', 'vedic-chant', 'zhou-ritual', 'greek-modes', 'han-wei-yuefu',
       'hebrew-temple', 'maya-ritual',
+    ]));
+    expect(new Set(NODES.filter((n) => n.era === 'medieval').map((n) => n.id))).toEqual(new Set([
+      'gagaku', 'baghdad-maqam', 'gregorian-chant', 'griot-mali', 'hindustani',
+      'tang-changan', 'andalus-cordoba', 'notre-dame-polyphony', 'suzhou-kunqu', 'renaissance-polyphony', 'aztec-tenochtitlan',
     ]));
     expect(new Set(NODES.map((n) => n.id)).size).toBe(NODES.length);
     expect(new Set(NODES.map((n) => `${n.lat},${n.lon}`)).size).toBe(NODES.length);
@@ -34,7 +40,7 @@ describe('music dataset', () => {
     for (const genre of GENRES) expect(NODES.filter((n) => n.genre === genre.id).length).toBeGreaterThanOrEqual(2);
     expect(new Set(NODES.map((n) => n.continent)).size).toBe(4);
     const patches = new Set<PatchId>(NODES.map((n) => n.patch));
-    expect(patches.size).toBe(13);
+    expect(patches.size).toBe(16);
     expect([...patches].every((patch) => PATCHES[patch] !== undefined)).toBe(true);
     for (const node of NODES) {
       expect(node.lat).toBeGreaterThanOrEqual(-90); expect(node.lat).toBeLessThanOrEqual(90);
@@ -88,7 +94,8 @@ describe('music dataset', () => {
         expect(node.notation.source.length).toBeGreaterThan(0);
         expect(node.notation.referenceKey.length).toBeGreaterThan(0);
         expect(node.notation.glyphs.length).toBeGreaterThanOrEqual(4);
-        expect(node.notation.glyphs.length).toBeLessThanOrEqual(6);
+        // C2：工尺谱保留低八度合、四、一，才能闭合八度关系。
+        expect(node.notation.glyphs.length).toBeLessThanOrEqual(8);
         for (const glyph of node.notation.glyphs) {
           expect(glyph.symbol.length).toBeGreaterThan(0);
           expect(glyph.modern.length).toBeGreaterThan(0);
@@ -128,7 +135,13 @@ describe('music dataset', () => {
       }
       for (const childId of node.influences) expect(NODE_BY_ID.get(childId)?.influencedBy).toContain(node.id);
     }
-    expect(NODES.filter((node) => node.notation).length).toBe(6);
+    // R1：旧人名/旧标题的回归网。只扫 NODES。
+    // 不要扩大范围去扫 ai-workflow/04-*.md——那里保留着「修复前写法」作对照，扫它必红。
+    const corpus = JSON.stringify(NODES);
+    for (const stale of ['苏帕迪', '伊本·米斯贾赫', '传统雅乐笙', '《左传》伶州鸠论律']) {
+      expect(corpus).not.toContain(stale);
+    }
+    expect(NODES.filter((node) => node.notation).length).toBe(8);
     for (const id of ['sumer-lyre', 'hurrian-hymn', 'greek-modes', 'persian-silkroad']) {
       expect(NODE_BY_ID.get(id)?.notation).toBeUndefined();
       expect(NODE_BY_ID.get(id)?.notationAbsentNote).toBeTruthy();
@@ -137,7 +150,7 @@ describe('music dataset', () => {
     for (const node of NODES) {
       for (const glyph of node.notation?.glyphs ?? []) expect(forbiddenSymbols.has(glyph.symbol)).toBe(false);
     }
-    for (const id of ['jiahu-flute', 'egypt-temple', 'andean-chavin', 'maya-ritual']) {
+    for (const id of ['jiahu-flute', 'egypt-temple', 'andean-chavin', 'maya-ritual', 'tang-changan', 'andalus-cordoba', 'renaissance-polyphony', 'aztec-tenochtitlan']) {
       expect(NODE_BY_ID.get(id)?.notation).toBeUndefined();
       expect(NODE_BY_ID.get(id)?.notationAbsentNote).toBeTruthy();
     }
@@ -145,7 +158,7 @@ describe('music dataset', () => {
       expect(node.repertoire.every((work) => !work.publicDomain)).toBe(true);
     }
     const musicians = NODES.flatMap((node) => node.musicians);
-    expect(musicians).toHaveLength(54);
+    expect(musicians).toHaveLength(67);
     expect(new Set(musicians.map((musician) => musician.bio)).size).toBe(musicians.length);
     const bios = musicians.map((musician) => musician.bio);
     for (let leftIndex = 0; leftIndex < bios.length; leftIndex += 1) {
@@ -159,7 +172,15 @@ describe('music dataset', () => {
         expect(sharesRun(legacies[leftIndex]!, legacies[rightIndex]!, 10)).toBe(false);
       }
     }
-    expect(NODES.flatMap((node) => node.treatiseList)).toHaveLength(68);
+    const proseSources = Object.values(import.meta.glob(['./people.ts', './treatises.ts'], { eager: true, query: '?raw', import: 'default' })) as string[];
+    for (const source of proseSources) {
+      expect(source).not.toMatch(/\bfunction\b/);
+      expect(source).not.toContain('=>');
+      expect(source).not.toContain('`');
+    }
+    const roundSevenBios = NODES.filter((node) => ['tang-changan', 'andalus-cordoba', 'notre-dame-polyphony', 'suzhou-kunqu', 'renaissance-polyphony', 'aztec-tenochtitlan'].includes(node.id)).flatMap((node) => node.musicians.map((musician) => musician.bio));
+    for (const bio of roundSevenBios) expect(bio).toMatch(/(\d{1,2}\s*世纪|\d{3,4}\s*年|《[^》]+》)/);
+    expect(NODES.flatMap((node) => node.treatiseList)).toHaveLength(82);
     const treatises = NODES.flatMap((node) => node.treatiseList);
     const digests = treatises.map((treatise) => treatise.digest);
     for (let leftIndex = 0; leftIndex < digests.length; leftIndex += 1) {
@@ -188,7 +209,7 @@ describe('music dataset', () => {
       for (const phrase of forbiddenBoilerplate) expect(text).not.toContain(phrase);
     }
     const themes = NODES.flatMap((node) => node.repertoire.filter((work) => work.motifKind === 'theme').map((work) => `${node.id}:${work.title}`));
-    expect(themes.sort()).toEqual(['leipzig-baroque:《平均律键盘曲集》', 'vienna-classical:《月光奏鸣曲》', 'vienna-classical:《第五交响曲》']);
+    expect(themes.sort()).toEqual(['leipzig-baroque:《平均律键盘曲集》', 'renaissance-polyphony:《圣母颂》', 'vienna-classical:《月光奏鸣曲》', 'vienna-classical:《第五交响曲》']);
     const fifth = NODE_BY_ID.get('vienna-classical')!.repertoire.find((work) => work.title === '《第五交响曲》')!;
     const moonlight = NODE_BY_ID.get('vienna-classical')!.repertoire.find((work) => work.title === '《月光奏鸣曲》')!;
     const bach = NODE_BY_ID.get('leipzig-baroque')!.repertoire.find((work) => work.title === '《平均律键盘曲集》')!;
@@ -204,9 +225,15 @@ describe('music dataset', () => {
     for (const preset of PRESETS) {
       expect(NODE_BY_ID.has(preset.a)).toBe(true); expect(NODE_BY_ID.has(preset.b)).toBe(true); expect(preset.a).not.toBe(preset.b);
     }
-    expect(PRESETS).toHaveLength(7);
-    expect(ODYSSEYS).toHaveLength(3);
-    expect(ODYSSEYS.map((route) => route.stops.length)).toEqual([5, 7, 6]);
+    expect(PRESETS).toHaveLength(9);
+    expect(ODYSSEYS).toHaveLength(4);
+    expect(ODYSSEYS.map((route) => route.stops.length)).toEqual([5, 7, 8, 7]);
+    for (const id of ['tang-changan', 'andalus-cordoba', 'notre-dame-polyphony', 'suzhou-kunqu', 'renaissance-polyphony', 'aztec-tenochtitlan']) {
+      const node = NODE_BY_ID.get(id)!;
+      expect(node.musicians.length).toBeGreaterThanOrEqual(2);
+      expect(node.repertoire.length).toBeGreaterThanOrEqual(2);
+      expect(node.treatiseList.length).toBeGreaterThanOrEqual(2);
+    }
     for (const route of ODYSSEYS) {
       for (let index = 0; index < route.stops.length; index += 1) {
         const node = NODE_BY_ID.get(route.stops[index]!);

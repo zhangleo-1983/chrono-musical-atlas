@@ -12,6 +12,7 @@ function FigureDrawing({ figure }: { figure: ReturnType<typeof figureFor> }) {
   if (figure === 'organ') return <><path d="M80 128V62h44v66M138 128V42h44v86M196 128V24h44v104M254 128V50h44v78M68 128h240M92 142h216" /><path className="resonance" d="M92 54c22-15 44-15 66 0m20-14c22-15 44-15 66 0m20 20c18-12 36-12 54 0" /></>;
   if (figure === 'rhythm') return <><path d="M70 128h260M96 128V82h44v46m34 0V64h44v64m34 0V78h44v50M92 54h52m16 0h52m16 0h52" /><path className="resonance" d="M76 44c18-18 34-18 50 0m74 0c18-18 34-18 50 0m64 0c14-14 27-14 40 0" /></>;
   if (figure === 'harmonic') return <><path d="M78 128h246M108 128V88h42m-21 0V54m72 74V72h42m-21 0V42m72 86V62h42m-21 0V30" /><path className="resonance" d="M108 42h42m-21 0v12m51 18h42m-21 0v-30m51 42h42m-21 0v-32" /><text x="108" y="145" fill="currentColor" stroke="none" fontSize="12">1:2</text><text x="180" y="145" fill="currentColor" stroke="none" fontSize="12">2:3</text><text x="252" y="145" fill="currentColor" stroke="none" fontSize="12">3:4</text></>;
+  if (figure === 'voices') return <><path d="M62 72h276M62 88h276M62 104h276" /><path className="resonance" d="M76 58c32-18 58 18 90 0s58 18 90 0 58 18 82 0M76 122c32 18 58-18 90 0s58-18 90 0 58-18 82 0" /><text x="64" y="48" fill="currentColor" stroke="none" fontSize="12">F1</text><text x="64" y="142" fill="currentColor" stroke="none" fontSize="12">F2</text></>;
   return <><path d="M76 128h248M112 128V80h48v48m80 0V64h48v64" /><path className="resonance" d="M92 48h216" /></>;
 }
 

@@ -14,6 +14,9 @@ export const PATCH_FIGURE: Record<PatchId, FigureId> = {
   'swing-jazz': 'rhythm',
   'rock-distortion': 'rhythm',
   'electro-pulse': 'rhythm',
+  'lute-pipa': 'lute',
+  'choral-organum': 'voices',
+  'bamboo-flute': 'flute',
 };
 
 export const FIGURE_CAPTIONS: Record<FigureId, string> = {
@@ -25,6 +28,7 @@ export const FIGURE_CAPTIONS: Record<FigureId, string> = {
   lute: '乌德琴与弹拨乐器示意',
   organ: '键盘、管风琴与弦乐结构示意',
   rhythm: '鼓组与节奏设备示意',
+  voices: '人声共振峰与声部织体示意',
 };
 
 export function figureFor(node: Pick<MusicNode, 'patch' | 'figure'>): FigureId {

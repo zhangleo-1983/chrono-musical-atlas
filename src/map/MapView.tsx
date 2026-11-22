@@ -26,7 +26,20 @@ const LABEL_OFFSETS: Record<string, { x: number; y: number; anchor: 'start' | 'e
   'gregorian-chant': { x: -54, y: -18, anchor: 'end' },
   'leipzig-baroque': { x: 12, y: -24, anchor: 'start' },
   'vienna-classical': { x: 10, y: 18, anchor: 'start' },
-  'london-rock': { x: -24, y: 14, anchor: 'end' },
+  'london-rock': { x: -58, y: 34, anchor: 'end' },
+  'chicago-blues': { x: -36, y: 30, anchor: 'end' },
+  'tang-changan': { x: 30, y: -42, anchor: 'start' },
+  'notre-dame-polyphony': { x: -34, y: -16, anchor: 'end' },
+  'paris-impressionism': { x: 34, y: 16, anchor: 'start' },
+  'renaissance-polyphony': { x: 26, y: -42, anchor: 'start' },
+  'suzhou-kunqu': { x: 26, y: 24, anchor: 'start' },
+  'andalus-cordoba': { x: -30, y: 20, anchor: 'end' },
+};
+const NODE_OFFSETS: Record<string, { x: number; y: number }> = {
+  'han-wei-yuefu': { x: -20, y: 0 },
+  'tang-changan': { x: 20, y: 0 },
+  'notre-dame-polyphony': { x: -20, y: 0 },
+  'paris-impressionism': { x: 20, y: 0 },
 };
 
 export default function MapView() {
@@ -101,9 +114,9 @@ export default function MapView() {
         {showArcs && <g>{orderedArcs.map((arc) => { const highlighted = highlightedEdgeKeys.has(arc.key) && !odyssey; const dimmed = odyssey || (selectedId !== null && !highlighted); return <path key={arc.key} className={`map-arc ${highlighted ? 'is-lineage' : ''} ${dimmed ? 'is-dim' : ''}`} style={{ '--arc-color': GENRE_COLORS[NODES.find((n) => n.id === arc.to)!.genre] } as React.CSSProperties} d={arc.d} />; })}</g>}
         {odyssey && <g>{visibleRouteArcs.map((arc) => { const current = activeRoute?.stops[odyssey.index] === arc.from || activeRoute?.stops[odyssey.index] === arc.to; return <path key={arc.key} className={`map-route-arc ${current ? 'is-current' : ''}`} style={{ '--arc-color': GENRE_COLORS[NODES.find((n) => n.id === arc.to)!.genre] } as React.CSSProperties} d={arc.d} />; })}</g>}
       <g>{orderedNodes.map((node) => {
-        const [x, y] = project(node.lon, node.lat); const state = nodeTimeState(node, era, year); const highlighted = highlightedNodeIds.has(node.id); const dimmed = odyssey ? !highlighted : selectedId !== null && !highlighted; const current = odyssey && activeRoute?.stops[odyssey.index] === node.id; const showLabel = node.influence === 5 || (compact ? selectedId === node.id || isZoomed : hoveredId === node.id || selectedId === node.id || isZoomed); const label = LABEL_OFFSETS[node.id] ?? { x: 9, y: -8, anchor: 'start' as const };
+        const [x, y] = project(node.lon, node.lat); const state = nodeTimeState(node, era, year); const highlighted = highlightedNodeIds.has(node.id); const dimmed = odyssey ? !highlighted : selectedId !== null && !highlighted; const current = odyssey && activeRoute?.stops[odyssey.index] === node.id; const showLabel = node.influence === 5 || (compact ? selectedId === node.id || isZoomed : hoveredId === node.id || selectedId === node.id || isZoomed); const label = LABEL_OFFSETS[node.id] ?? { x: 9, y: -8, anchor: 'start' as const }; const offset = NODE_OFFSETS[node.id] ?? { x: 0, y: 0 };
         return <g key={node.id} transform={`translate(${x} ${y})`} className={`map-node-group ${dimmed ? 'is-dim' : ''} ${state === 'past' ? 'is-past' : ''} ${highlighted ? 'is-highlighted' : ''} ${current ? 'is-odyssey-current' : ''}`} onMouseEnter={() => setHovered(node.id)} onMouseLeave={() => setHovered(null)} onClick={(event) => { event.stopPropagation(); selectNode(node.id); }}>
-          <g className="map-node-detail"><circle cx="0" cy="0" r={node.influence * 5 + 7} fill={`url(#glow-${node.id})`} opacity="0.45" /><circle className="map-node-core" cx="0" cy="0" r={2.2 + node.influence * 0.8} fill={GENRE_COLORS[node.genre]} /><circle className="map-node-hit" cx="0" cy="0" r={coarsePointer ? 16 : 8} />{showLabel && <text className="map-node-label" x={label.x} y={label.y} textAnchor={label.anchor}>{node.name}</text>}</g>
+          <g transform={`translate(${offset.x} ${offset.y})`} className="map-node-offset"><g className="map-node-detail"><circle cx="0" cy="0" r={node.influence * 5 + 7} fill={`url(#glow-${node.id})`} opacity="0.45" /><circle className="map-node-core" cx="0" cy="0" r={2.2 + node.influence * 0.8} fill={GENRE_COLORS[node.genre]} /><circle className="map-node-hit" cx="0" cy="0" r={coarsePointer ? 16 : 8} />{showLabel && <text className="map-node-label" x={label.x} y={label.y} textAnchor={label.anchor}>{node.name}</text>}</g></g>
         </g>;
       })}</g>
       </g>
