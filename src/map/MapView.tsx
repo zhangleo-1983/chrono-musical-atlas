@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { NODES, ODYSSEYS } from '../data';
 import { GENRE_COLORS } from '../domain/genres';
 import { isVisible, lineage, nodeTimeState } from '../domain/selectors';
@@ -116,7 +116,7 @@ export default function MapView() {
       <g>{orderedNodes.map((node) => {
         const [x, y] = project(node.lon, node.lat); const state = nodeTimeState(node, era, year); const highlighted = highlightedNodeIds.has(node.id); const dimmed = odyssey ? !highlighted : selectedId !== null && !highlighted; const current = odyssey && activeRoute?.stops[odyssey.index] === node.id; const showLabel = node.influence === 5 || (compact ? selectedId === node.id || isZoomed : hoveredId === node.id || selectedId === node.id || isZoomed); const label = LABEL_OFFSETS[node.id] ?? { x: 9, y: -8, anchor: 'start' as const }; const offset = NODE_OFFSETS[node.id] ?? { x: 0, y: 0 };
         return <g key={node.id} transform={`translate(${x} ${y})`} className={`map-node-group ${dimmed ? 'is-dim' : ''} ${state === 'past' ? 'is-past' : ''} ${highlighted ? 'is-highlighted' : ''} ${current ? 'is-odyssey-current' : ''}`} onMouseEnter={() => setHovered(node.id)} onMouseLeave={() => setHovered(null)} onClick={(event) => { event.stopPropagation(); selectNode(node.id); }}>
-          <g transform={`translate(${offset.x} ${offset.y})`} className="map-node-offset"><g className="map-node-detail"><circle cx="0" cy="0" r={node.influence * 5 + 7} fill={`url(#glow-${node.id})`} opacity="0.45" /><circle className="map-node-core" cx="0" cy="0" r={2.2 + node.influence * 0.8} fill={GENRE_COLORS[node.genre]} /><circle className="map-node-hit" cx="0" cy="0" r={coarsePointer ? 16 : 8} />{showLabel && <text className="map-node-label" x={label.x} y={label.y} textAnchor={label.anchor}>{node.name}</text>}</g></g>
+          <g style={{ '--ox': `${offset.x}px`, '--oy': `${offset.y}px` } as CSSProperties} className="map-node-offset"><g className="map-node-detail"><circle cx="0" cy="0" r={node.influence * 5 + 7} fill={`url(#glow-${node.id})`} opacity="0.45" /><circle className="map-node-core" cx="0" cy="0" r={2.2 + node.influence * 0.8} fill={GENRE_COLORS[node.genre]} /><circle className="map-node-hit" cx="0" cy="0" r={coarsePointer ? 16 : 8} />{showLabel && <text className="map-node-label" x={label.x} y={label.y} textAnchor={label.anchor}>{node.name}</text>}</g></g>
         </g>;
       })}</g>
       </g>

@@ -1,6 +1,9 @@
 .map-shell { position: absolute; inset: 0; background: radial-gradient(circle at 50% 46%, #10152d 0%, #070913 68%); }
 .map-svg { width: 100%; height: 100%; display: block; touch-action: none; user-select: none; }
 .map-world { transform-origin: 0 0; }
+/* 同址节点分离量必须按屏幕恒定：offset 除以 --k 再被 world 的 scale(k) 放大回来，
+   否则放大到 k=3 时 ±20 会变成屏幕 ±60，视觉上把点甩到几百公里外。 */
+.map-node-offset { transform: translate(calc(var(--ox, 0px) / var(--k, 1)), calc(var(--oy, 0px) / var(--k, 1))); }
 .map-node-detail { transform: scale(calc(1 / var(--k, 1))); transform-origin: 0 0; }
 .map-grid { fill: none; stroke: rgba(91, 119, 180, 0.13); stroke-width: 0.7; vector-effect: non-scaling-stroke; }
 .map-land { fill: #111a35; stroke: rgba(154, 176, 231, 0.36); stroke-width: 1; vector-effect: non-scaling-stroke; }
