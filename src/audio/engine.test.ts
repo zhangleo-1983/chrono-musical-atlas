@@ -13,8 +13,9 @@ let oscillatorStopTimes: number[] = [];
 
 class FakeAudioNode {
   connections: unknown[] = [];
+  disconnected = false;
   connect(target: unknown) { this.connections.push(target); return target; }
-  disconnect() {}
+  disconnect() { this.disconnected = true; }
 }
 class FakeGain extends FakeAudioNode {
   gain = { value: 0.7, setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn(), cancelScheduledValues: vi.fn() };
@@ -182,6 +183,73 @@ describe('audio engine state snapshots', () => {
     await audioEngine.playMotif('strings', { bpm: 60, stepsPerBeat: 1, voice: 'strings', wet: 0, events: [{ step: 0, midi: 60, durSteps: 1 }] });
     expect(createdOscillators).toBeGreaterThanOrEqual(3);
     expect(createdGainValues.some((gain) => gain.value >= 5 && gain.value <= 10)).toBe(true);
+    audioEngine.stop();
+  });
+
+  it('builds choir with parallel F1 and F2 resonance filters', async () => {
+    const { audioEngine } = await import('./engine');
+    await audioEngine.playMotif('choir-resonance', { bpm: 60, stepsPerBeat: 1, voice: 'choir', wet: 0, events: [{ step: 0, midi: 60, durSteps: 1, vel: 0.68 }] });
+    expect(createdFilters.some((filter) => filter.type === 'bandpass' && filter.frequency.value === 730)).toBe(true);
+    expect(createdFilters.some((filter) => filter.type === 'bandpass' && filter.frequency.value === 1090)).toBe(true);
+    audioEngine.stop();
+  });
+
+  it('holds choir gain through note end before exponential release', async () => {
+    const { audioEngine } = await import('./engine');
+    await audioEngine.playMotif('choir-sustain', { bpm: 60, stepsPerBeat: 1, voice: 'choir', wet: 0, events: [{ step: 0, midi: 60, durSteps: 1, vel: 0.68 }] });
+    const noteEnd = 0.05 + 1;
+    const peak = 0.09 * 0.68;
+    const choirGains = createdGainValues.filter((gain) => gain.setValueAtTime.mock.calls.some(([value, time]) => value === peak && time === noteEnd));
+    expect(choirGains).toHaveLength(3);
+    expect(choirGains.every((gain) => gain.exponentialRampToValueAtTime.mock.calls.every(([value, time]) => !(value === 0.0001 && time < noteEnd)))).toBe(true);
+    audioEngine.stop();
+  });
+
+  it('builds bamboo flute with membrane filter and gain-routed breath vibrato', async () => {
+    const { audioEngine } = await import('./engine');
+    await audioEngine.playMotif('bamboo-flute', { bpm: 60, stepsPerBeat: 1, voice: 'bambooFlute', wet: 0, events: [{ step: 0, midi: 60, durSteps: 1, vel: 0.68 }] });
+    expect(createdFilters.some((filter) => filter.type === 'bandpass' && filter.frequency.value === 2400)).toBe(true);
+    const lfo = createdOscillatorNodes.find((oscillator) => oscillator.frequency.value === 5.2);
+    expect(lfo?.connections.some((target) => target instanceof FakeGain)).toBe(true);
+    audioEngine.stop();
+  });
+
+  it('keeps each new motif voice alive through its configured tail', async () => {
+    vi.useFakeTimers();
+    const { audioEngine } = await import('./engine');
+    for (const voice of ['choir', 'lute', 'bambooFlute'] as const) {
+      await audioEngine.playMotif(`tail-${voice}`, { bpm: 60, stepsPerBeat: 1, voice, wet: 0, events: [{ step: 0, midi: 60, durSteps: 0.3 }] });
+      vi.advanceTimersByTime(300);
+      expect(audioEngine.getState().playingKey).toBe(`tail-${voice}`);
+      vi.advanceTimersByTime(2200);
+      expect(audioEngine.getState().playingKey).toBeNull();
+    }
+    vi.useRealTimers();
+  });
+
+  it('disconnects every bandpass filter created by a lute note', async () => {
+    const { audioEngine } = await import('./engine');
+    const before = createdFilters.length;
+    await audioEngine.playMotif('lute-release', { bpm: 60, stepsPerBeat: 1, voice: 'lute', wet: 0, events: [{ step: 0, midi: 60, durSteps: 1 }] });
+    // 噪声层也建了一个 1800 的 bandpass（Q 为默认 0.7），用 Q=0.9 把它排除掉。
+    const luteFilters = createdFilters.slice(before).filter((filter) => filter.frequency.value === 2200 || (filter.frequency.value === 1800 && filter.Q.value === 0.9));
+    expect(luteFilters).toHaveLength(4);
+    createdOscillatorNodes.forEach((oscillator) => oscillator.onended?.());
+    expect(luteFilters.every((filter) => filter.disconnected)).toBe(true);
+    audioEngine.stop();
+  });
+
+  it('keeps the bamboo membrane filters alive until the last partial ends', async () => {
+    const { audioEngine } = await import('./engine');
+    const before = createdFilters.length;
+    await audioEngine.playMotif('bamboo-release', { bpm: 60, stepsPerBeat: 1, voice: 'bambooFlute', wet: 0, events: [{ step: 0, midi: 60, durSteps: 1 }] });
+    const membrane = createdFilters.slice(before).filter((filter) => filter.frequency.value === 2400 || filter.frequency.value === 6000);
+    expect(membrane).toHaveLength(2);
+    const lfo = createdOscillatorNodes.find((oscillator) => oscillator.frequency.value === 5.2);
+    lfo?.onended?.();
+    expect(membrane.some((filter) => filter.disconnected)).toBe(false);   // LFO 先结束不许断滤波器
+    createdOscillatorNodes.forEach((oscillator) => oscillator.onended?.());
+    expect(membrane.every((filter) => filter.disconnected)).toBe(true);
     audioEngine.stop();
   });
 });

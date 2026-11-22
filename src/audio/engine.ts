@@ -12,6 +12,9 @@ const VOICE_TAIL: Partial<Record<Voice, number>> = {
   lyre: 1.2,
   bronzeBell: 2.5,
   pluck: 2.4,
+  lute: 2.0,
+  choir: 0.6,
+  bambooFlute: 0.45,
 };
 
 const listeners = new Set<() => void>();
@@ -121,6 +124,74 @@ function scheduleBoneFlute(ctx: AudioContext, parent: GainNode, event: NoteEvent
   base.onended = () => { baseEnded?.call(base, new Event('ended')); depth.disconnect(base.detune); depth.disconnect(second.detune); depth.disconnect(third.detune); };
   lfo.start(when); lfo.stop(end + 0.03); lfo.onended = () => lfo.disconnect();
   scheduleNoise(ctx, parent, event, when, stepSeconds, false, Math.min(0.22, end - when));
+}
+
+function scheduleChoir(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number, stepSeconds: number): void {
+  if (event.midi === undefined) return;
+  const noteEnd = when + Math.max(0.3, event.durSteps * stepSeconds);
+  const releaseEnd = noteEnd + 0.35;
+  const lowpass = ctx.createBiquadFilter(); lowpass.type = 'lowpass'; lowpass.frequency.value = 3200; lowpass.connect(parent);
+  const f1 = ctx.createBiquadFilter(); f1.type = 'bandpass'; f1.frequency.value = 730; f1.Q.value = 5; f1.connect(lowpass);
+  const f2 = ctx.createBiquadFilter(); f2.type = 'bandpass'; f2.frequency.value = 1090; f2.Q.value = 6; f2.connect(lowpass);
+  const detuneDepth = ctx.createGain(); detuneDepth.gain.value = 5;
+  const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 4.8; lfo.connect(detuneDepth);
+  const frequency = midiFrequency(event.midi);
+  const oscillators: OscillatorNode[] = [];
+  [-6, 6, 0].forEach((detune, index) => {
+    const osc = ctx.createOscillator(); osc.type = index === 2 ? 'triangle' : 'sawtooth'; osc.frequency.value = frequency; osc.detune.value = detune;
+    const gain = ctx.createGain(); gain.gain.setValueAtTime(0.0001, when);
+    const peak = 0.09 * event.vel;
+    gain.gain.linearRampToValueAtTime(peak, when + 0.12);
+    gain.gain.setValueAtTime(peak, noteEnd);
+    gain.gain.exponentialRampToValueAtTime(0.0001, releaseEnd);
+    gain.connect(index === 0 ? f1 : f2); osc.connect(gain); oscillators.push(osc);
+    detuneDepth.connect(osc.detune);
+    osc.start(when); osc.stop(releaseEnd + 0.03);
+    osc.onended = () => { osc.disconnect(); gain.disconnect(); };
+  });
+  lfo.start(when); lfo.stop(releaseEnd + 0.03);
+  lfo.onended = () => { lfo.disconnect(); oscillators.forEach((osc) => detuneDepth.disconnect(osc.detune)); detuneDepth.disconnect(); lowpass.disconnect(); f1.disconnect(); f2.disconnect(); };
+}
+
+function scheduleLute(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number): void {
+  if (event.midi === undefined) return;
+  const decay = Math.min(2.0, Math.max(0.8, 1.9 - (event.midi - 48) * 0.02));
+  const frequency = midiFrequency(event.midi);
+  scheduleNoise(ctx, parent, event, when, 0, false, 0.01, 1800, 0.05, true);
+  [1, 2, 3, 4].forEach((partial) => {
+    const end = when + decay / Math.max(1, partial * 0.7);
+    const filter = ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = partial === 1 ? 1800 : 2200; filter.Q.value = partial === 1 ? 0.9 : 0.7; filter.connect(parent);
+    let live = 2;
+    [-3, 3].forEach((detune) => {
+      const osc = ctx.createOscillator(); osc.type = 'triangle'; osc.frequency.value = frequency * partial; osc.detune.value = detune;
+      const gain = ctx.createGain(); osc.connect(gain); gain.connect(filter);
+      connectOscillator(osc, gain, when, end, (0.12 / Math.pow(partial, 0.8)) * event.vel, 0.002);
+      const ended = osc.onended;
+      osc.onended = () => { ended?.call(osc, new Event('ended')); live -= 1; if (live === 0) filter.disconnect(); };
+    });
+  });
+}
+
+function scheduleBambooFlute(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number, stepSeconds: number): void {
+  if (event.midi === undefined) return;
+  const noteEnd = when + Math.max(0.25, event.durSteps * stepSeconds);
+  const releaseEnd = noteEnd + 0.2;
+  const frequency = midiFrequency(event.midi);
+  const bandpass = ctx.createBiquadFilter(); bandpass.type = 'bandpass'; bandpass.frequency.value = 2400; bandpass.Q.value = 2.2;
+  const lowpass = ctx.createBiquadFilter(); lowpass.type = 'lowpass'; lowpass.frequency.value = 6000; bandpass.connect(lowpass).connect(parent);
+  const depth = ctx.createGain(); depth.gain.value = 12;
+  const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 5.2; lfo.connect(depth);
+  const oscillators: OscillatorNode[] = [];
+  const partials: Array<[number, OscillatorType, number]> = [[1, 'sine', 0.09], [2, 'sine', 0.05], [3, 'triangle', 0.028], [4, 'sine', 0.016]];
+  let remaining = partials.length;
+  partials.forEach(([multiple, type, peak]) => {
+    const osc = ctx.createOscillator(); osc.type = type; osc.frequency.setValueAtTime(frequency * multiple * 0.977, when); osc.frequency.exponentialRampToValueAtTime(frequency * multiple, when + 0.07);
+    const gain = ctx.createGain(); gain.gain.setValueAtTime(0.0001, when); gain.gain.linearRampToValueAtTime(peak * event.vel, when + 0.08); gain.gain.setValueAtTime(peak * event.vel, noteEnd); gain.gain.exponentialRampToValueAtTime(0.0001, releaseEnd);
+    osc.connect(gain).connect(bandpass); depth.connect(osc.detune); oscillators.push(osc);
+    osc.start(when); osc.stop(releaseEnd + 0.03); osc.onended = () => { osc.disconnect(); gain.disconnect(); remaining -= 1; if (remaining === 0) { bandpass.disconnect(); lowpass.disconnect(); } };
+  });
+  lfo.start(when); lfo.stop(releaseEnd + 0.03); lfo.onended = () => { lfo.disconnect(); oscillators.forEach((osc) => depth.disconnect(osc.detune)); depth.disconnect(); };
+  scheduleNoise(ctx, parent, event, when, stepSeconds, false, undefined, 1200, 0.03);
 }
 
 function scheduleBronzeBell(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number): void {
@@ -262,6 +333,9 @@ function schedulePluck(ctx: AudioContext, parent: GainNode, event: NoteEvent, wh
 
 function scheduleVoice(ctx: AudioContext, parent: GainNode, event: NoteEvent, when: number, stepSeconds: number, voice: Voice): void {
   const end = when + Math.max(0.06, event.durSteps * stepSeconds);
+  if (voice === 'choir') { scheduleChoir(ctx, parent, event, when, stepSeconds); return; }
+  if (voice === 'lute') { scheduleLute(ctx, parent, event, when); return; }
+  if (voice === 'bambooFlute') { scheduleBambooFlute(ctx, parent, event, when, stepSeconds); return; }
   if (voice === 'boneFlute') { scheduleBoneFlute(ctx, parent, event, when, stepSeconds); return; }
   if (voice === 'bronzeBell') { scheduleBronzeBell(ctx, parent, event, when); return; }
   if (voice === 'lyre') { scheduleStringPluck(ctx, parent, event, when, 1.2, 800); return; }
